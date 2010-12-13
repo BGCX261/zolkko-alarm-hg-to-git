@@ -1,9 +1,10 @@
-%%
-%% SNTP Server supervisor
-%%
+% @author author <author@example.com>
+%% @copyright YYYY author.
+
+%% @doc Callbacks for the sntp service.
 
 -module(sntp_sup).
-
+-author('author <author@example.com>').
 -behaviour(supervisor).
 
 -export([start_link/0]).
