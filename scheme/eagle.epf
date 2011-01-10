@@ -7,6 +7,10 @@ Desktop="Desktop"
 
 [Globals]
 AutoSaveProject=1
+UsedLibrary="/Users/zolkko/Applications/lbr/crystal.lbr"
+UsedLibrary="/Users/zolkko/Applications/lbr/pinhead.lbr"
+UsedLibrary="/Users/zolkko/Applications/lbr/rcl.lbr"
+UsedLibrary="/Users/zolkko/Applications/lbr/enc28j60.lbr"
 
 [Win_1]
 Type="Control Panel"
