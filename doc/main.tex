@@ -6,33 +6,34 @@
 \usepackage[utf8]{inputenc}
 \usepackage{eskdchngsheet}
 
-
+\usepackage[ unicode ]{ hyperref }
 \usepackage{amstext}
 \usepackage{ amsmath }
 \usepackage{ listings }
-\usepackage[ unicode ]{ hyperref }
+\graphicspath{{/Users/zolkko/Projects/zolkko-alarm/doc/imgs/}}
 
-\ESKDdepartment{Федеральное агентство по образованиюГосударственное образовательное учреждениеВысшего профессионального образования<<Воронежский государственный технический университет>>(гоувпо <<ВГТУ>>)}
+\ESKDdepartment{Федеральное агентство по образованиюГосударственное образовательное учреждениеВысшего профессионального образования<<Воронежский государственный технический университет>>(гоувпо <<ВГТУ>>)}
 \ESKDcompany{}
 \ESKDclassCode{31 1398}
 \ESKDdocName{Пояснительная записка}
 \ESKDsignature{TODO: ШИФР}
 
 
-\ESKDtitle{Разработка програмно-аппаратного комплекса <<Будильник>>}
+%% Разработка програмно-аппаратного комплекса <<Будильник>>
+\ESKDtitle{Отчт по преддипломной практике}
 
 \ESKDauthor{Анисимов~А.~Н.}
 \ESKDtitleApprovedBy{Руководитель}{Барабанов~В.~Ф.}
-\ESKDtitleAgreedBy{XXX}{XXX~X.~X.}
-\ESKDtitleDesignedBy{XXX}{XXX~X.~X}
-\ESKDtitleDesignedBy{XXX}{XXX~X.~X}
+%%\ESKDtitleAgreedBy{XXX}{XXX~X.~X.}
+\ESKDtitleDesignedBy{студент группы ВМ-072}{Анисимов А.Н.}
+%%\ESKDtitleDesignedBy{XXX}{XXX~X.~X}
 
 
 
 
 \begin{document}
 \maketitle
-%Задание на курсовой проект%Лист замечаний руководителя
+%Задание на курсовой проект%Лист замечаний руководителя
 \tableofcontents
 
 \newpage
@@ -41,8 +42,12 @@
 \include{cad_review}
 \include{tools}
 \include{development}
-\section{Разработка программно-аппаратного комплекса}
 
+\newpage
+\section{Разработка программно-аппаратного комплекса}
+\include{display}
+\include{led_res}
+\include{led_pwm}
 
 %\newpage
 %\begin{ thebibliography }{99}

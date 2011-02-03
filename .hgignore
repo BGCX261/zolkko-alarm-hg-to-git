@@ -1,3 +1,10 @@
 .DS_Store
-
+.log
+.aux
+.hex
+.elf
+doc/main.out
+doc/main.pdf
+doc/main.synctex.gz
+doc/main.toc
 
