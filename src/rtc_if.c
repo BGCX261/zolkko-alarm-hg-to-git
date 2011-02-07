@@ -25,7 +25,7 @@ void rtc_init(void)
 
     // Setting RTC Interrupt overflow level
     // TODO: RTC_OFVINTLVL_gm | RTC_COMPINTLVL_gm
-    RTC.INTCTRL = (RTC.INTCTRL & ~RTC_OVFINTLVL_gm) | 1;
+    RTC.INTCTRL = (RTC.INTCTRL & ~RTC_OVFINTLVL_gm)  | 1;
     RTC.INTCTRL = (RTC.INTCTRL & ~RTC_COMPINTLVL_gm) | 0; // Do not use this kind of interupt
 }
 
