@@ -7,6 +7,7 @@
  */
 
 #include <avr/io.h>
+#include <util/delay_basic.h>
 #include "ili9320.h"
 
 
@@ -44,6 +45,38 @@ void ili9320::initialize_ports(void)
 	ili9320_data(0xff, 0xff);
 }
 
+/**
+ * Reset functionality
+ */
+void ili9320::reset()
+{
+    uint32_t freq =
+#ifdef F_CPU
+        F_CPU;
+#else
+        2000000UL;
+#endif
+    
+    if (CLK.CTRL & CLK_SCLKSEL_RC32M_gc) {
+        freq = 32000000UL;
+    } else if (CLK.CTRL & CLK_SCLKSEL_RC2M_gc) {
+        freq = 2000000UL;
+    } else if (CLK.CTRL & CLK_SCLKSEL_RC32K_gc) {
+        // 32KHz internal system clock
+        freq = 32768UL;
+    } else if (CLK.CTRL & CLK_SCLKSE_PLL_gc) {
+        // TODO: Determine freq PLL
+    }
+    // else --- use default external FREQ
+
+    // We need to stay there for about 10ms
+
+    // 1 / freq - получаем длительность одной команды
+    // 0.01 
+    
+    // 4 cycles per iteration
+    //_delay_loop_2(
+}
 
 /**
  * 
@@ -51,6 +84,6 @@ void ili9320::initialize_ports(void)
 void ili9320::initialize(void)
 {
 	this->initialize_ports();
-	
 	// Continue initialization
 }
+

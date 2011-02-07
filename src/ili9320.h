@@ -318,6 +318,12 @@ class ili9320 {
 				this->writeData(COLOR_BLACK);
 			}
 		}
+        
+        /**
+         * Reset controller
+         */
+        void reset(void);
 };
 
 #endif
+
