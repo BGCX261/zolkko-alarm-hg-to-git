@@ -22,6 +22,9 @@ ili9320::ili9320()
 }
 
 
+/**
+ *
+ */
 void ili9320::initialize_ports(void)
 {
 	ili9320_lo.DIR = 0xff;
@@ -45,38 +48,37 @@ void ili9320::initialize_ports(void)
 	ili9320_data(0xff, 0xff);
 }
 
+
 /**
- * Reset functionality
+ * Reset functionality.
  */
 void ili9320::reset()
 {
-    uint32_t freq =
-#ifdef F_CPU
-        F_CPU;
-#else
-        2000000UL;
-#endif
+    ili9320_pin_clr(ili9320_rst);
     
-    if (CLK.CTRL & CLK_SCLKSEL_RC32M_gc) {
-        freq = 32000000UL;
-    } else if (CLK.CTRL & CLK_SCLKSEL_RC2M_gc) {
-        freq = 2000000UL;
-    } else if (CLK.CTRL & CLK_SCLKSEL_RC32K_gc) {
-        // 32KHz internal system clock
-        freq = 32768UL;
-    } else if (CLK.CTRL & CLK_SCLKSE_PLL_gc) {
-        // TODO: Determine freq PLL
-    }
-    // else --- use default external FREQ
-
-    // We need to stay there for about 10ms
-
-    // 1 / freq - получаем длительность одной команды
-    // 0.01 
+    // Hold at low state
+    if (CLK.CTRL & CLK_SCLKSEL_RC32K_gc) {
+		_delay_loop_2(82); // 32768 / 100 / 4 ~ 328 / 4 ~ 82
+	} else if (CLK.CTRL & CLK_SCLKSEL_RC32M_gc){
+		_delay_loop_2(40000);
+		_delay_loop_2(40000);
+	} else if (CLK.CTRL & CLK_SCLKSEL_RC2M_gc) {
+		_delay_loop_2(5000);
+	} else if (CLK_SCLKSEL_PLL_gc) {
+		// Not implemented yet
+        //
+	} else if (CLK.CTRL & CLK_SCLKSEL_XOSC_gc) {
+		uint32_t count = (F_CPU / 100 / 4) + 1;
+		while (count > 0x0000ffff) {
+			_delay_loop_2(0xffff);
+			count -= 0xffff;
+		}
+		_delay_loop_2((uint16_t)(count & 0xffff));
+	}
     
-    // 4 cycles per iteration
-    //_delay_loop_2(
+    ili9320_pin_set(ili9320_rst);
 }
+
 
 /**
  * 
@@ -84,6 +86,6 @@ void ili9320::reset()
 void ili9320::initialize(void)
 {
 	this->initialize_ports();
-	// Continue initialization
+    this->reset();
 }
 
