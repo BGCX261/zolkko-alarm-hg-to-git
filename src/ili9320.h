@@ -221,9 +221,11 @@ class ili9320 {
 			ili9320_data(hi, lo);
 			this->writeImpulse();
 		}
-
-		void initialize_ports(void);
-		
+        
+        void resetDelay(void);
+        
+        void commandDelay(void);
+        
 	public:
 		ili9320();
 		

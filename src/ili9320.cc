@@ -50,13 +50,10 @@ void ili9320::initialize_ports(void)
 
 
 /**
- * Reset functionality.
+ * 10ms delay
  */
-void ili9320::reset()
+void ili9320::resetDelay(void)
 {
-    ili9320_pin_clr(ili9320_rst);
-    
-    // Hold at low state
     if (CLK.CTRL & CLK_SCLKSEL_RC32K_gc) {
 		_delay_loop_2(82); // 32768 / 100 / 4 ~ 328 / 4 ~ 82
 	} else if (CLK.CTRL & CLK_SCLKSEL_RC32M_gc){
@@ -65,17 +62,50 @@ void ili9320::reset()
 	} else if (CLK.CTRL & CLK_SCLKSEL_RC2M_gc) {
 		_delay_loop_2(5000);
 	} else if (CLK_SCLKSEL_PLL_gc) {
-		// Not implemented yet
-        //
+        uint32_t count;
+        float factor = ((OSC.PLLCTRL & OSC_PLLFAC_gm) >> OSC_PLLFAC_gp) * 1.0;
+        if (OSC.PLLCTRL & OSC_PLLSRC_RC2M_gc) {
+            count = ((20000.0 * (factor / 100)) / 4) + 1;
+        } else if (OSC.PLLCTRL & OSC_PLLSRC_RC32M_gc) {
+            count = ((320000.0 * (factor / 100)) / 4) + 1;
+        } else {
+            count = (((F_CPU * factor) / 100) / 4) + 1;
+        }
+        
+        while (count > 0x0000ffff) {
+            _delay_loop_2(0xffff);
+            count -= 0xffff;
+        }
+        
+        if (count != 0) _delay_loop_2((uint16_t)(count & 0xffff))
 	} else if (CLK.CTRL & CLK_SCLKSEL_XOSC_gc) {
 		uint32_t count = (F_CPU / 100 / 4) + 1;
+        
 		while (count > 0x0000ffff) {
 			_delay_loop_2(0xffff);
 			count -= 0xffff;
 		}
-		_delay_loop_2((uint16_t)(count & 0xffff));
+        
+        if (count != 0) _delay_loop_2((uint16_t)(count & 0xffff));
 	}
-    
+}
+
+
+/**
+ * 100us delay
+ */
+void ili9320::commandDelay(void)
+{
+}
+
+
+/**
+ * Reset functionality.
+ */
+void ili9320::reset()
+{
+    ili9320_pin_clr(ili9320_rst);
+    this->resetDelay();
     ili9320_pin_set(ili9320_rst);
 }
 
@@ -87,5 +117,6 @@ void ili9320::initialize(void)
 {
 	this->initialize_ports();
     this->reset();
+    this->initialize_main();
 }
 
