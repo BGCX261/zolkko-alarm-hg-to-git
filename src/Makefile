@@ -1,9 +1,9 @@
 
-SRC=main.c
+SRC=main.cc ili9320.cc
 CPU=atxmega32a4
 DEV=x32a4
 FREQ=25000000UL
-DEF_PAR=-Wall -std=gnu99 -gdwarf-2 -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums
+DEF_PAR=-Wall -gdwarf-2 -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums
 
 main: $(SRC)
 	avr-gcc $(DEF_PAR) -DF_CPU=$(FREQ)  -mmcu=$(CPU) $(SRC) -o zolkko-alarm.elf

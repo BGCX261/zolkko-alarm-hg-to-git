@@ -1,7 +1,7 @@
 /**
  * ili9320.h - ATXMega32a4 interface to TFT display
  * drived by ili9320 IC in 16bit RGB mode
- * 
+ *
  * Copyright (c) 2011 Alex Anisimov, <zolkko@gmail.com>
  * GPLv3
  */
@@ -226,6 +226,14 @@ class ili9320 {
         
         void commandDelay(void);
         
+        void initialize_power(void);
+        
+        void initialize_gamma(void);
+        
+        void initialize_ports(void);
+        
+        void initialize_panel_interface(void);
+        
 	public:
 		ili9320();
 		
@@ -278,7 +286,6 @@ class ili9320 {
 		{
 			ili9320_pin_set(ili9320_wr);
 		}
-
 		
 		/**
 		 * Write data into register index
@@ -301,7 +308,7 @@ class ili9320 {
 		/**
  		 * set ili9320 cursor into point(x, y)
 		 */
-		void setCursor(uint16_t x, uint16_t y)
+		inline void setCursor(uint16_t x, uint16_t y)
 		{
 			this->writeRegister(ili_horizontal_gram_address_set, x);
 			this->writeRegister(ili_vertical_gram_address_set, y);
@@ -310,21 +317,27 @@ class ili9320 {
 		/**
 		 * Clear screen
 		 */
-		void clear()
-		{
-			this->setCursor(0, 0);
-			this->writeIndex(ili_write_data_to_gram);
- 			
-			this->writeData(COLOR_BLACK);
-			for (unsigned long i = 0; i <= ili9320_screen_size - 1; i++) {
-				this->writeData(COLOR_BLACK);
-			}
-		}
+		void clear();
         
         /**
          * Reset controller
          */
         void reset(void);
+        
+        /**
+         *
+         */
+        void putPixel(uint16_t x, uint16_t y, uint16_t color);
+        
+        /**
+         *
+         */
+        void window(uint16_t xStart, uint16_t yStart, uint16_t xEnd, uint16_t yEnd);
+        
+        /**
+         *
+         */
+        void lineTo(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color);
 };
 
 #endif

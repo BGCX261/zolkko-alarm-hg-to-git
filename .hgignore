@@ -3,6 +3,7 @@
 .aux
 .hex
 .elf
+.swp
 doc/main.out
 doc/main.pdf
 doc/main.synctex.gz

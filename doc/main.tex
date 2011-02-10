@@ -10,6 +10,7 @@
 \usepackage{amstext}
 \usepackage{ amsmath }
 \usepackage{ listings }
+\usepackage{tikz}
 \graphicspath{{/Users/zolkko/Projects/zolkko-alarm/doc/imgs/}}
 
 \ESKDdepartment{Федеральное агентство по образованиюГосударственное образовательное учреждениеВысшего профессионального образования<<Воронежский государственный технический университет>>(гоувпо <<ВГТУ>>)}
@@ -35,6 +36,8 @@
 \maketitle
 %Задание на курсовой проект%Лист замечаний руководителя
 \tableofcontents
+
+\tikz{\draw (-1,-1) -- (1,1); \path[fill=green!80!blue,draw=red] (0,0) circle (7mm);}
 
 \newpage
 \include{introduction}
