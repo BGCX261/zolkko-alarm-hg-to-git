@@ -1,6 +1,6 @@
 /**
  * ili9320.h - ATXMega32a4 interface to TFT display
- * drived by ili9320 IC in 16bit RGB mode
+ * drived by ili9320 IC in 16bit i80 mode
  *
  * Copyright (c) 2011 Alex Anisimov, <zolkko@gmail.com>
  * GPLv3
@@ -37,7 +37,7 @@
 
 #ifndef ili9320_rst
 #define ili9320_rst E, 3
-#endif 
+#endif
 
 #ifndef ili9320_lo
 #define ili9320_lo PORTA
@@ -73,7 +73,7 @@
 
 #ifndef ili9320_rst
 #define ili9320_rst E, 3
-#endif 
+#endif
 
 #ifndef ili9320_lo
 #define ili9320_lo PORTA
@@ -118,18 +118,18 @@
 #define ili_display_control4 0x0a
 #define ili_rgb_interface_control 0x0c
 #define ili_frame_marker_position 0x0d
-#define ili_rgb_interface_control2 0x0f
+#define ili_display_interface_control2 0x0f
 
 #define ili_power_control1 0x10
 #define ili_power_control2 0x11
 #define ili_power_control3 0x12
 #define ili_power_control4 0x13
+#define ili_power_control7 0x29
 
 #define ili_horizontal_gram_address_set 0x20
 #define ili_vertical_gram_address_set 0x21
 #define ili_write_data_to_gram 0x22
 
-#define ili_power_control7 0x29
 #define ili_frame_rate_and_color_control 0x2b
 
 #define ili_gamma_control1 0x30
@@ -158,20 +158,59 @@
 #define ili_panel_interface_control5 0x97
 #define ili_panel_interface_control6 0x98
 
+//
+// ILI9320 Entry mode
+//
+
+// Moves origin address according to the  ID setting when  a window address area is made
+#define ILI9320_EM_ORG 0x0080
+
+// Hight-speed write mode
+#define ILI9320_EM_HWM 0x0100
+
+// Swap R and B order of written data
+#define ILI9320_EM_GBR 0x1000
+
+// 16-bit MCU interface data format (transferring mode)
+#define ILI9320_EM_65K     0x0000 // 80-system 16-bit interface (1 transfers/pixel) 65,536 colors
+#define ILI9320_EM_65KA    0x4000
+#define ILI9320_EM_246K_SL 0x8000 // 80-system 16-bit interface (2 transfers/pixel) 262,144 colors
+#define ILI9320_EM_246K_SF 0xc000
 
 
-// Entry mode constants (ref page 56)
-#define ILI_EMODE_AM_VER   0b0000000000001000
-#define ILI_EMODE_AM_HOR   0b0000000000000000
-#define ILI_EMODE_HOR_INC  0b0000000000010000
-#define ILI_EMODE_VER_INC  0b0000000000100000
-#define ILI_EMODE_MOVE_ORG 0b0000000010000000
-#define ILI_EMODE_BGR      0b0001000000000000
-// only applicable to 16bit mode
-#define ILI_EMODE_1TR      0b0000000000000000
-#define ILI_EMODE_2TR_LF   0b1000000000000000
-#define ILI_EMODE_2TR_HF   0b1100000000000000
+//
+// ILI9320 RGB Interface control
+//
 
+// RGB Data wdth
+#define ILI9320_RGB_DATA_WIDTH_18 0x0000
+#define ILI9320_RGB_DATA_WIDTH_16 0x0001
+#define ILI9320_RGB_DATA_WIDTH_6 0x0002
+#define ILI9320_RGB_DATA_WIDTH_DISABLED 0x0003
+
+// ILI9320 Display operation modes
+#define ILI9320_DOM_INTERNAL_SYSTEM_CLOCK 0x0000
+#define ILI9320_DOM_RGB_INTERFACE 0x0010
+#define ILI9320_DOM_VSYNC_INTERFACE 0x0020
+#define ILI9320_DOM_DISABLED 0x0030
+
+// Select interface to access GRAM
+#define ILI9320_GRAM_ACCESS_SYSTEM 0x0000
+#define ILI9320_GRAM_ACCESS_RGB 0x0100
+
+// Set GRAM write cycle through the RGB interface
+#define ILI9320_GRAM_WC_RGB_1F 0x0000
+#define ILI9320_GRAM_WC_RGB_2F 0x2000
+#define ILI9320_GRAM_WC_RGB_3F 0x4000
+#define ILI9320_GRAM_WC_RGB_4F 0x6000
+#define ILI9320_GRAM_WC_RGB_5F 0x8000
+#define ILI9320_GRAM_WC_RGB_6F 0xa000
+#define ILI9320_GRAM_WC_RGB_7F 0xc000
+#define ILI9320_GRAM_WC_RGB_8F 0xe000
+
+//
+// Default colors
+//
 
 // Default colors
 #define COLOR_RED 0xf800
@@ -182,8 +221,17 @@
 #define COLOR_YELLOW 0xffe0
 
 
+//
+// Main class
+//
+
 class ili9320 {
 	private:
+        
+        uint8_t entryModeHi;
+        
+        uint8_t entryModeLo;
+        
 		/**
 		 * Write impulse
 		 */
@@ -192,14 +240,14 @@ class ili9320 {
 			ili9320_pin_clr(ili9320_wr);
 			ili9320_pin_set(ili9320_wr);
 		}
-
+        
 		/**
 		 * Output register address into address line.
 		 */
 		inline void writeIndex(uint8_t index)
 		{
 			this->reg_select();
-			ili9320_data(0, index);	
+			ili9320_data(0, index);
 			this->writeImpulse();
 			this->reg_deselect();
 		}
@@ -222,10 +270,6 @@ class ili9320 {
 			this->writeImpulse();
 		}
         
-        void resetDelay(void);
-        
-        void commandDelay(void);
-        
         void initialize_power(void);
         
         void initialize_gamma(void);
@@ -233,6 +277,11 @@ class ili9320 {
         void initialize_ports(void);
         
         void initialize_panel_interface(void);
+        
+        void beginUpdate(void);
+        
+        void endUpdate(void);
+        
         
 	public:
 		ili9320();
@@ -317,7 +366,7 @@ class ili9320 {
 		/**
 		 * Clear screen
 		 */
-		void clear();
+		void clear(void);
         
         /**
          * Reset controller
@@ -338,6 +387,8 @@ class ili9320 {
          *
          */
         void lineTo(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color);
+        
+        void delayMs(uint8_t count);
 };
 
 #endif

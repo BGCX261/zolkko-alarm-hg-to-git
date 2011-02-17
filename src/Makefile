@@ -2,7 +2,7 @@
 SRC=main.cc ili9320.cc
 CPU=atxmega32a4
 DEV=x32a4
-FREQ=25000000UL
+FREQ=2000000UL
 DEF_PAR=-Wall -gdwarf-2 -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums
 
 main: $(SRC)
