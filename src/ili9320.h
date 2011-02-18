@@ -162,7 +162,12 @@
 // ILI9320 Entry mode
 //
 
-// Moves origin address according to the  ID setting when  a window address area is made
+// AC update direction
+#define ILI9320_EM_AM 0x0008 // Address update in vertical direction (AM)
+#define ILI9320_EM_HI 0x0010 // Horizontal increment (ID0)
+#define ILI9320_EM_VI 0x0020 // Vertical increment (ID1)
+
+// Moves origin address according to the ID setting when a window address area is made
 #define ILI9320_EM_ORG 0x0080
 
 // Hight-speed write mode
@@ -177,6 +182,8 @@
 #define ILI9320_EM_246K_SL 0x8000 // 80-system 16-bit interface (2 transfers/pixel) 262,144 colors
 #define ILI9320_EM_246K_SF 0xc000
 
+// Default entry mode
+#define ILI9320_EM_DEFAULT ILI9320_EM_HI | ILI9320_EM_VI | ILI9320_EM_65K
 
 //
 // ILI9320 RGB Interface control
@@ -225,13 +232,9 @@
 // Main class
 //
 
+
 class ili9320 {
 	private:
-        
-        uint8_t entryModeHi;
-        
-        uint8_t entryModeLo;
-        
 		/**
 		 * Write impulse
 		 */

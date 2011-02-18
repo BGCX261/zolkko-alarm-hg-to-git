@@ -132,15 +132,15 @@ void ili9320::initialize(void)
 	this->writeRegister(ili_driver_output_control1, 0x01, 0x00);
 	this->writeRegister(ili_lcd_driving_control, 0x07, 0x00);
 	
-	this->writeRegister(ili_entry_mode, 0x10, 0x30);     // Entry mode 
+	this->writeRegister(ili_entry_mode, ILI9320_EM_DEFAULT); // Entry mode 0x1030
 	
-	this->writeRegister(ili_resize_control, 0x00, 0x00); // Resize control
+	this->writeRegister(ili_resize_control, 0x00, 0x00);
 	
 	// Set back and front porch of display to 2 lines.
 	this->writeRegister(ili_display_control2, 0x02, 0x02);
-	this->writeRegister(ili_display_control3, 0x00, 0x00);	//Display control (3)
+	this->writeRegister(ili_display_control3, 0x00, 0x00);
 
-	this->writeRegister(0x07, 0x01, 0x01); // power control 1 BT, AP
+	this->writeRegister(ili_display_control1, 0x01, 0x01); // power control 1 BT, AP
     
     this->writeRegister(ili_rgb_interface_control, 0x00, 0x00);
     this->writeRegister(ili_frame_rate_and_color_control, 0x00, 0x00);
@@ -160,7 +160,7 @@ void ili9320::initialize(void)
 	this->initialize_gamma();
     
 	this->delayMs(10);
-	this->writeRegister(0x07, 0x01, 0x37);
+	this->writeRegister(ili_display_control1, 0x01, 0x37);
     this->delayMs(10);
 	
 	this->chip_deselect();
