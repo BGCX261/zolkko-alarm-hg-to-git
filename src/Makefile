@@ -17,6 +17,9 @@ test:
 upload: hex
 	avrdude -c avrispmkII -P usb -p $(DEV)
 
+all: main hex
+	
+
 clean:
 	unlink zolkko-alarm.elf
 	unlink zolkko-alarm.hex

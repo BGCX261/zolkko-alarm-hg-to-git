@@ -105,17 +105,79 @@
 #define ili9320_nop  __asm__ __volatile__ ("nop" ::)
 #endif
 
+//
+// ILI9320 register`s addresses and bit masks
+//
 
-// ILI9320 register`s addresses
-#define ili_start_oscillation 0x00
+//
+// Oscillation (R0)
+//
+#define ILI9320_START_OSCILLATION 0x00
+#define ILI9320_OSC_STOP 0x00
+#define ILI9320_OSC_START 0x01
+
+//
+// R1
+//
 #define ili_driver_output_control1 0x01
+
 #define ili_lcd_driving_control 0x02
-#define ili_entry_mode 0x03
-#define ili_resize_control 0x04
-#define ili_display_control1 0x07
-#define ili_display_control2 0x08
-#define ili_display_control3 0x09
-#define ili_display_control4 0x0a
+
+//
+// Entry mode
+//
+#define ILI9320_ENTRY_MODE  0x03
+#define ILI9320_EM_AM       0x0008  // Address update in vertical direction (AM)
+#define ILI9320_EM_HI       0x0010  // Horizontal increment (ID0)
+#define ILI9320_EM_VI       0x0020  // Vertical increment (ID1)
+#define ILI9320_EM_ORG      0x0080  // Moves origin address according to the ID
+                                    // setting when a window address area is made
+#define ILI9320_EM_HWM      0x0100  // High-speed write mode
+#define ILI9320_EM_BGR      0x1000  // Swap R and B order of written data
+#define ILI9320_EM_65K      0x0000  // 16-bit MCU interface data format (transferring mode)
+                                    // 80-system 16-bit interface (1 transfers/pixel) 65,536 colors
+#define ILI9320_EM_65KA     0x4000
+#define ILI9320_EM_246K_SL  0x8000  // 80-system 16-bit interface (2 transfers/pixel) 262,144 colors
+#define ILI9320_EM_246K_SF  0xc000
+
+//
+// GRAM resize control
+//
+#define ILI9320_RESIZE_CTRL 0x04
+
+//
+// Display control 1 (R07)
+//
+#define ILI9320_DISPLAY_CTRL1 0x07
+
+// Enable bits
+#define ILI9320_DC1_D0 0x0001
+#define ILI9320_DC1_D1 0x0002
+
+// 8 color mode
+#define ILI9320_DC1_8COLOR_MODE 0x0008
+
+// DTE
+#define ILI9320_DC1_DTE 0x0010
+#define ILI9320_DC1_GON 0x0020
+
+// Base image enable
+#define ILI9320_DC1_BASE_IMG_ENABLE 0x0100
+
+// Partial image 1, 2
+#define ILI9320_DC1_PARTIAL_IMAGE1 0x1000
+#define ILI9320_DC1_PARTIAL_IMAGE2 0x2000
+
+//
+// Specify size of front (hi-byte) and back (low-byte) porches
+#define ILI9320_DISPLAY_CTRL2 0x08
+#define ILI9320_DISPLAY_CTRL3 0x09
+
+//
+// Display control 4
+//
+#define ILI9320_DISPLAY_CTRL4 0x0a
+
 #define ili_rgb_interface_control 0x0c
 #define ili_frame_marker_position 0x0d
 #define ili_display_interface_control2 0x0f
@@ -148,8 +210,20 @@
 #define ili_vertical_address_start_position 0x52
 #define ili_vertical_address_end_position 0x53
 
-#define driver_output_control2 0x60
-#define base_image_display_control 0x61
+//
+// Gate scan control
+//
+#define ILI9320_DRIVER_OUTPUT_CONTROL2 0x60
+#define ILI9320_GSC_SCAN_DIRECTION_TOP 0x00
+
+#define ILI9320_BASE_IMAGE_DISPLAY_CONTROL 0x61
+#define ILI9320_GSC_GRAYSCALE_INVERSION 0x01
+#define ILI9320_GSC_VERTICAL_SCROLL_ENABLE 0x02
+#define ILI9320_GSC_NONDISPLAY_AREA_HI 0x04
+
+#define ILI9320_VERTICAL_SCROLL_CONTROL 0x6a
+
+
 
 #define ili_panel_interface_control1 0x90
 #define ili_panel_interface_control2 0x92
@@ -161,29 +235,6 @@
 //
 // ILI9320 Entry mode
 //
-
-// AC update direction
-#define ILI9320_EM_AM 0x0008 // Address update in vertical direction (AM)
-#define ILI9320_EM_HI 0x0010 // Horizontal increment (ID0)
-#define ILI9320_EM_VI 0x0020 // Vertical increment (ID1)
-
-// Moves origin address according to the ID setting when a window address area is made
-#define ILI9320_EM_ORG 0x0080
-
-// Hight-speed write mode
-#define ILI9320_EM_HWM 0x0100
-
-// Swap R and B order of written data
-#define ILI9320_EM_GBR 0x1000
-
-// 16-bit MCU interface data format (transferring mode)
-#define ILI9320_EM_65K     0x0000 // 80-system 16-bit interface (1 transfers/pixel) 65,536 colors
-#define ILI9320_EM_65KA    0x4000
-#define ILI9320_EM_246K_SL 0x8000 // 80-system 16-bit interface (2 transfers/pixel) 262,144 colors
-#define ILI9320_EM_246K_SF 0xc000
-
-// Default entry mode
-#define ILI9320_EM_DEFAULT ILI9320_EM_HI | ILI9320_EM_VI | ILI9320_EM_65K
 
 //
 // ILI9320 RGB Interface control
@@ -235,6 +286,8 @@
 
 class ili9320 {
 	private:
+        uint16_t entryMode;
+        
 		/**
 		 * Write impulse
 		 */
@@ -280,6 +333,8 @@ class ili9320 {
         void initialize_ports(void);
         
         void initialize_panel_interface(void);
+
+        void initialize_partial_image(void);
         
         void beginUpdate(void);
         
@@ -392,6 +447,8 @@ class ili9320 {
         void lineTo(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color);
         
         void delayMs(uint8_t count);
+        
+        void fill(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color);
 };
 
 #endif

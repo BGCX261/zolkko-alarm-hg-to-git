@@ -24,7 +24,7 @@ ili9320::ili9320()
 
 
 /**
- *
+ * Initialize ports
  */
 void ili9320::initialize_ports(void)
 {
@@ -49,16 +49,6 @@ void ili9320::initialize_ports(void)
 	ili9320_data(0xff, 0xff);
 }
 
-#define ili9320Command(x, y) this->writeRegister(x, y)
-
-#define ili9320WriteCmd(x) this->writeIndex(x)
-
-#define Lcd_WriteReg(x, y) this->writeRegister(x, y)
-
-#define LCD_SetReg(x, y) this->writeRegister(x, y)
-
-#define DelayXms(x) this->delayMs(x)
-
 /**
  * Tune gamma
  */
@@ -82,33 +72,33 @@ void ili9320::initialize_gamma(void)
  */
 void ili9320::initialize_power(void)
 {
-    /*
-	this->writeRegister(0x10, 0x16, 0xB0); // power control 1 BT,AP
-	this->writeRegister(0x11, 0x00, 0x37); // power control 2 DC,VC
-	this->writeRegister(0x12, 0x01, 0x3E); // power control 3 VRH
-	this->writeRegister(0x13, 0x1A, 0x00); // power control 4 vcom amplitude
-	this->delayMs(10);
-	
-	this->writeRegister(0x29, 0x00, 0x0f);     // power control 7 VCOMH
-	this->delayMs(10);
-    */
-    ili9320Command(0x0010, 0x0000);     // Power Control 1 (R10h)
-    ili9320Command(0x0011, 0x0007);     // Power Control 2 (R11h)  
-    ili9320Command(0x0012, 0x0000);     // Power Control 3 (R12h)
-    ili9320Command(0x0013, 0x0000);     // Power Control 4 (R13h)
+    this->writeRegister(0x0010, 0x00, 0x00);
+    this->writeRegister(0x0011, 0x00, 0x07);
+    this->writeRegister(0x0012, 0x00, 0x00);
+    this->writeRegister(0x0013, 0x00, 0x00);
     this->delayMs(255);
     this->delayMs(255);
     
-    ili9320Command(0x0010, 0x14B0);     // Power Control 1 (R10h)
+    this->writeRegister(0x0010, 0x14, 0xB0);
     this->delayMs(255);
-    ili9320Command(0x0011, 0x0007);     // Power Control 2 (R11h)  
+    this->writeRegister(0x0011, 0x00, 0x07);
     this->delayMs(255);
-    ili9320Command(0x0012, 0x008E);     // Power Control 3 (R12h)
-    ili9320Command(0x0013, 0x0C00);     // Power Control 4 (R13h)
-    ili9320Command(0x0029, 0x0015);     // NVM read data 2 (R29h)
+    this->writeRegister(0x0012, 0x00, 0x8E);
+    this->writeRegister(0x0013, 0x0C, 0x00);
+    this->writeRegister(0x0029, 0x00, 0x15);
     this->delayMs(255);
 }
 
+void ili9320::initialize_partial_image(void)
+{
+    this->writeRegister(0x80, 0x00, 0x00); // Display Position? Partial Display 1.   
+    this->writeRegister(0x81, 0x00, 0x00); // RAM Address Start? Partial Display 1.   
+    this->writeRegister(0x82, 0x00, 0x00); // RAM Address End-Partial Display 1.  
+    
+    this->writeRegister(0x83, 0x00, 0x00); // Displsy Position? Partial Display 2.
+    this->writeRegister(0x84, 0x00, 0x00); // RAM Address Start? Partial Display 2.   
+    this->writeRegister(0x85, 0x00, 0x00); // RAM Address End? Partial Display 2. 
+}
 
 /**
  * Initialize ili9320 display
@@ -121,46 +111,52 @@ void ili9320::initialize(void)
 	this->chip_select();
     this->delayMs(255);
     
-    this->writeRegister(0x00e5, 0x80, 0x00);
-    
-	this->writeRegister(ili_start_oscillation, 0x00, 0x01);
+    // Starting oscillation and stabilizing for a 50ms
+	this->writeRegister(ILI9320_START_OSCILLATION, 0x00, ILI9320_OSC_START);
 	this->delayMs(50);
 	
-	this->writeRegister(ili_display_control1, 0x00, 0x00);
+	this->writeRegister(ILI9320_DISPLAY_CTRL1, 0x00, 0x00);
 	this->delayMs(10);
 	
 	this->writeRegister(ili_driver_output_control1, 0x01, 0x00);
 	this->writeRegister(ili_lcd_driving_control, 0x07, 0x00);
 	
-	this->writeRegister(ili_entry_mode, ILI9320_EM_DEFAULT); // Entry mode 0x1030
+    entryMode = ILI9320_EM_65K | ILI9320_EM_HI | ILI9320_EM_VI;
+	this->writeRegister(ILI9320_ENTRY_MODE, entryMode);
 	
-	this->writeRegister(ili_resize_control, 0x00, 0x00);
+    // There is no resizing by default
+	this->writeRegister(ILI9320_RESIZE_CTRL, 0x00, 0x00);
 	
 	// Set back and front porch of display to 2 lines.
-	this->writeRegister(ili_display_control2, 0x02, 0x02);
-	this->writeRegister(ili_display_control3, 0x00, 0x00);
-
-	this->writeRegister(ili_display_control1, 0x01, 0x01); // power control 1 BT, AP
+	this->writeRegister(ILI9320_DISPLAY_CTRL2, 0x02, 0x02);
+	this->writeRegister(ILI9320_DISPLAY_CTRL3, 0x04, 0x2f);
+    this->writeRegister(ILI9320_DISPLAY_CTRL4, 0x00, 0x00);
     
     this->writeRegister(ili_rgb_interface_control, 0x00, 0x00);
     this->writeRegister(ili_frame_rate_and_color_control, 0x00, 0x00);
     this->writeRegister(ili_display_interface_control2, 0x00, 0x00);
+    
+    setCursor(0, 0);
+    window(0, 0, 240, 320);
 	
     this->initialize_power();
 	
-    // Horizontal | Vertical GRAM Address Set
-	this->setCursor(0, 0);
-	this->window(0, 0, 239, 319); // 239, 319);
-	
-	this->writeRegister(0x60, 0x27, 0x03); // Driver Output Control 2  
-	this->writeRegister(0x61, 0x00, 0x03); // Base Image Display Control  
-	this->writeRegister(0x6a, 0x00, 0x00); // Base Image Display Control
-  	
-    this->initialize_panel_interface();
+    // Sacnning 320 lines, from the bottom to the top
+    // First gate is G0
+	this->writeRegister(ILI9320_DRIVER_OUTPUT_CONTROL2, ILI9320_GSC_SCAN_DIRECTION_TOP | 0x27, 0x00);
+	this->writeRegister(ILI9320_BASE_IMAGE_DISPLAY_CONTROL, 0x00, ILI9320_GSC_GRAYSCALE_INVERSION | ILI9320_GSC_NONDISPLAY_AREA_HI);
+	this->writeRegister(ILI9320_VERTICAL_SCROLL_CONTROL, 0x00, 0x00);
+    
 	this->initialize_gamma();
+    this->initialize_partial_image();
+    this->initialize_panel_interface();
     
 	this->delayMs(10);
-	this->writeRegister(ili_display_control1, 0x01, 0x37);
+	this->writeRegister(ILI9320_DISPLAY_CTRL1,
+                ILI9320_DC1_D0 | ILI9320_DC1_D1 |
+                ILI9320_DC1_DTE |
+                ILI9320_DC1_GON
+                | ILI9320_DC1_BASE_IMG_ENABLE);
     this->delayMs(10);
 	
 	this->chip_deselect();
@@ -171,7 +167,7 @@ void ili9320::initialize(void)
  */
 void ili9320::initialize_panel_interface(void)
 {
-    this->writeRegister(ili_panel_interface_control1, 0x00, 0x10);
+    this->writeRegister(ili_panel_interface_control1, 0x00, 0x1f); // 0x001f
     this->writeRegister(ili_panel_interface_control2, 0x00, 0x00);
     this->writeRegister(ili_panel_interface_control3, 0x00, 0x00);
     this->writeRegister(ili_panel_interface_control4, 0x00, 0x00);
@@ -248,7 +244,7 @@ void ili9320::window(uint16_t xStart, uint16_t yStart, uint16_t xEnd, uint16_t y
  */
 void ili9320::beginUpdate(void)
 {
-    this->writeRegister(0x07, 0x01, 0x01);
+    this->writeRegister(ILI9320_DISPLAY_CTRL1, 0x01, 0x01);
 }
 
 /**
@@ -256,7 +252,7 @@ void ili9320::beginUpdate(void)
  */
 void ili9320::endUpdate(void)
 {
-    this->writeRegister(0x07, 0x01, 0x37);
+    this->writeRegister(ILI9320_DISPLAY_CTRL1, 0x01, 0x37);
 }
 
 /**
@@ -264,13 +260,24 @@ void ili9320::endUpdate(void)
  */
 void ili9320::clear(void)
 {
-    //this->beginUpdate();
     this->setCursor(0, 0);
-    this->writeRegister(ili_write_data_to_gram, COLOR_BLACK);
-    for (unsigned long i = 0; i <= ili9320_screen_size - 1; i++) {
-        this->writeData(COLOR_BLACK);
-    }
-    //this->endUpdate();
+    this->writeRegister(ili_write_data_to_gram, 0x0000);
+    for (uint32_t i = 0; i <= ili9320_screen_size; i++)  this->writeData(0x0000);
+}
+
+/**
+ * Fill only specified area using @color
+ */
+void ili9320::fill(uint16_t x1, uint16_t y1, uint16_t w, uint16_t h, uint16_t color)
+{
+    uint32_t pixelCount = w * h;
+    
+    this->setCursor(0, 0);
+    this->window(x1, y1, x1 + w - 1, y1 + h - 1);
+    this->writeRegister(ILI9320_ENTRY_MODE, this->entryMode | ILI9320_EM_ORG);
+    this->writeRegister(ili_write_data_to_gram, color);
+    for (uint32_t i = 1; i < pixelCount; i++) this->writeData(color);
+    this->writeRegister(ILI9320_ENTRY_MODE, this->entryMode);
 }
 
 /**
