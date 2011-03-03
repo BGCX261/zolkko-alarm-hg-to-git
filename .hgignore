@@ -14,3 +14,9 @@ scheme/DST2001PH_REVB.l\#*
 scheme/main.b\#*
 scheme/main.s\#*
 
+src/.main.cc.swn
+src/.main.cc.swo
+src/ili9320.s
+src/main.s
+src/out.h
+src/test.h

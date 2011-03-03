@@ -8,6 +8,9 @@ DEF_PAR=-Wall -gdwarf-2 -Os -funsigned-char -funsigned-bitfields -fpack-struct -
 main: $(SRC)
 	avr-gcc $(DEF_PAR) -DF_CPU=$(FREQ)  -mmcu=$(CPU) $(SRC) -o zolkko-alarm.elf
 
+asm: $(SRC)
+	avr-gcc $(DEF_PAR) -DF_CPU=$(FREQ)  -mmcu=$(CPU) $(SRC) -S
+
 hex: zolkko-alarm.elf
 	avr-objcopy -j .text -O ihex zolkko-alarm.elf zolkko-alarm.hex
 
