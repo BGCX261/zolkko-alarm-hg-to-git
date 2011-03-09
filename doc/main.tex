@@ -1,64 +1,80 @@
 %%
-%% Автоматизированная разработка програмно-аппаратного комплекса <<цифровые часы с будильником>>
+%% Тема практики: <<Автоматизированная разработка программно-аппаратного комплекса
+%% ''цифровые часы с будильником'' на базе микроконтроллера AVR семейства XMega>>
 %%
-
-\documentclass[russian,utf8,pointsection]{eskdtext}
-\usepackage[utf8]{inputenc}
-\usepackage{eskdchngsheet}
-
-\usepackage[ unicode ]{ hyperref }
+\documentclass[russian,simple,utf8,pointsubsection]{eskdtext}
+\usepackage[unicode]{hyperref}
+\usepackage{multirow}
 \usepackage{amstext}
-\usepackage{ amsmath }
-\usepackage{ listings }
-\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{listings}
 \graphicspath{{/Users/zolkko/Projects/zolkko-alarm/doc/imgs/}}
+\usepackage{longtable}
 
-\ESKDdepartment{Федеральное агентство по образованиюГосударственное образовательное учреждениеВысшего профессионального образования<<Воронежский государственный технический университет>>(гоувпо <<ВГТУ>>)}
+\ESKDdepartment{}
 \ESKDcompany{}
 \ESKDclassCode{31 1398}
 \ESKDdocName{Пояснительная записка}
-\ESKDsignature{TODO: ШИФР}
-
-
-%% Разработка програмно-аппаратного комплекса <<Будильник>>
-\ESKDtitle{Отчт по преддипломной практике}
-
+\ESKDsignature{Автоматизированная разработка программно-аппаратного комплекса <<цифровые часы с будильником>> на базе микроконтроллера AVR семейства XMega}
+\ESKDtitle{Отчёт по преддипломной практике}
 \ESKDauthor{Анисимов~А.~Н.}
 \ESKDtitleApprovedBy{Руководитель}{Барабанов~В.~Ф.}
-%%\ESKDtitleAgreedBy{XXX}{XXX~X.~X.}
+\ESKDtitleAgreedBy{Руководитель}{Барабанов~В.~Ф.}
 \ESKDtitleDesignedBy{студент группы ВМ-072}{Анисимов А.Н.}
-%%\ESKDtitleDesignedBy{XXX}{XXX~X.~X}
-
-
+\ESKDdefaultTitleStyle{empty}
+\ESKDdefaultFirstStyle{empty}
+%% Уменьшаю размер шрифта колонки №1 основной надписи, так что бы эта
+%% "умная" дура всё таки влезла в рамку
+\renewcommand{\ESKDfontVIIsize}{\fontsize{10pt}{12pt}}
+%% пол умалчанию перечисления используют арабские цифры
+\renewcommand{\theenumi}{\arabic{enumi}}
 
 
 \begin{document}
-\maketitle
-%Задание на курсовой проект%Лист замечаний руководителя
-\tableofcontents
-
-\tikz{\draw (-1,-1) -- (1,1); \path[fill=green!80!blue,draw=red] (0,0) circle (7mm);}
-
+\include{title}
 \newpage
+
+\begin{center}ЗАМЕЧАНИЯ РУКОВОДИТЕЛЯ\end{center}
+\newpage
+
+\tableofcontents
+\newpage
+
+%% Введение
 \include{introduction}
 
+%% Постановка задачи
+\include{task}
+
+%% Обзор САПР
 \include{cad_review}
+
+%% Описываем выбор инструментария
 \include{tools}
-\include{development}
+\include{details}
+\include{econom}
+%%\section{Разработка программно-аппаратного комплекса}
+%%\include{led_res}
+%%\include{led_pwm}
 
-\newpage
-\section{Разработка программно-аппаратного комплекса}
-\include{display}
-\include{led_res}
-\include{led_pwm}
-
-%\newpage
-%\begin{ thebibliography }{99}
-%\bibitem{1} Автор1~И.~О. , Автор2~И.~О. Название первой книги. "−−− М.: Название	первого	издательства ,	1999.	"−−−	543~с .
-%\bibitem{2} Автор3~И.~О. , Автор4~И.~О. Название второй книги. "−−− К.: Название	второго	издательства ,	1999.	"−−−	543~с .
-%\end{ thebibliography }
-
-%\ESKDappendix{рекомендуемое}{Исходный код этого документа} \ lstset {columns=fixed , language=[LaTeX]TeX,
-%% basicstyle=\small , breaklines=true } \ l s t i n p u t l i s t i n g { general . tex }
-
+%% Библиография
+\begin{thebibliography}{99}
+\bibitem{lessing} Lawrence Lessig. ''Free culture: how big media uses technology and the law to lock down
+culture and control creativity'', ''Rebuilding Free Culture: One Idea'', KF2979.L47 200, ст. 282
+\bibitem{electric} http://www.staticfreesoft.com/electric.html
+\bibitem{geda} http://en.wikipedia.org/wiki/Geda
+\bibitem{avrref} Atmel corp., ''XMEGA A MANUAL'', ст. 129, ст. 190, ст. 317
+\bibitem{avrxm} http://atxmega.narod.ru/, структурное описание
+\bibitem{avrev} Евстифеев А.В. ''Микроконтроллеры AVR семейства Mega''., М.: Додэка-XXI, 2007
+\bibitem{technob} Одинцов В., ''Профессиональное программирование. Системный подход. 2 изд.'', BHV-СПб 2006, ст. 405
+\bibitem{erlang} Francesco Cesarini, Simon Thompson, ''Erlang Programming'', 2009
+\bibitem{display} Displaysun, ''Specification for TFT LCD module DST2001PH'', DST2001PH REV B, 2008/02/23
+\bibitem{ili9320} ILITek., ''a-Si TFT LCD Single Chip Driver 240RGBx320 Resolution and 16.7M color''
+\bibitem{avradc} Atmel corp., ''AVR1300: Using the XMEGA ADC'', Rev. 8033B-AVR-04/08
+\bibitem{mc34119} Freescale Semiconductor, ''Low power audio amplifier 34119. Technical Data.'', Rev. 3.0, 12/2006
+\bibitem{avrdac} Atmel corp., ''AVR1301: Using the XMEGA DAC'', Rev. 8033B-AVR-04/08
+\bibitem{avrspi} Atmel corp., ''AVR1309: Using the XMEGA SPI'', Rev. 8057A-AVR-02/08
+\bibitem{enc28j60} Microchip inc., ''ENC28J60 Data Sheet. Stand-Alone Ethernet Controller with SPI Interface''
+\end{thebibliography}
 \end{document}
+
