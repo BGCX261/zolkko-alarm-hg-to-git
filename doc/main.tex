@@ -2,7 +2,10 @@
 %% Тема практики: <<Автоматизированная разработка программно-аппаратного комплекса
 %% ''цифровые часы с будильником'' на базе микроконтроллера AVR семейства XMega>>
 %%
-\documentclass[russian,simple,utf8,pointsubsection]{eskdtext}
+\documentclass[russian,simple,utf8,pointsubsection,reduceheight=20mm]{eskdtext}
+\usepackage[utf8]{inputenc}
+\usepackage[russian]{babel}
+\usepackage{ucs}
 \usepackage[unicode]{hyperref}
 \usepackage{multirow}
 \usepackage{amstext}
@@ -10,34 +13,71 @@
 \usepackage{listings}
 \graphicspath{{/Users/zolkko/Projects/zolkko-alarm/doc/imgs/}}
 \usepackage{longtable}
+\usepackage{geometry}
+
+
 
 \ESKDdepartment{}
 \ESKDcompany{}
 \ESKDclassCode{31 1398}
 \ESKDdocName{Пояснительная записка}
-\ESKDsignature{Автоматизированная разработка программно-аппаратного комплекса <<цифровые часы с будильником>> на базе микроконтроллера AVR семейства XMega}
+\ESKDsignature{Автоматизированная разработка программно-аппаратного комплекса на базе микроконтроллера AVR семейства XMega}
 \ESKDtitle{Отчёт по преддипломной практике}
 \ESKDauthor{Анисимов~А.~Н.}
 \ESKDtitleApprovedBy{Руководитель}{Барабанов~В.~Ф.}
 \ESKDtitleAgreedBy{Руководитель}{Барабанов~В.~Ф.}
 \ESKDtitleDesignedBy{студент группы ВМ-072}{Анисимов А.Н.}
+
+%% первая страница и титульный лист без рамок и кастомный формат
 \ESKDdefaultTitleStyle{empty}
 \ESKDdefaultFirstStyle{empty}
+\ESKDdefaultStyle{empty}
+
 %% Уменьшаю размер шрифта колонки №1 основной надписи, так что бы эта
 %% "умная" дура всё таки влезла в рамку
 \renewcommand{\ESKDfontVIIsize}{\fontsize{10pt}{12pt}}
+
 %% пол умалчанию перечисления используют арабские цифры
 \renewcommand{\theenumi}{\arabic{enumi}}
 
+%% Сказали, что в перечислених ни каких булетов не должно быть
+\renewcommand{\labelitemi}{}
+\renewcommand{\labelitemii}{}
+\renewcommand{\labelitemiii}{}
+\renewcommand{\labelitemiv}{}
+
+%% Главные заголовки центрируються
+\renewcommand{\ESKDsectionAlign}{\ESKDsectAlignCenter}
+\renewcommand{\ESKDsectionStyle}{\normalfont\MakeUppercase}
+\renewcommand{\ESKDsubsectionStyle}{\normalfont}
+\renewcommand{\ESKDsubsubsectionStyle}{\normalfont}
+
+%% \renewcommand{\bibname}{Test}
+
+
+\geometry{left=20mm}
+\geometry{right=20mm}
+\setlength{\footskip}{0mm}
+
 
 \begin{document}
+\pagestyle{plain}
+\thispagestyle{empty}
 \include{title}
 \newpage
 
-\begin{center}ЗАМЕЧАНИЯ РУКОВОДИТЕЛЯ\end{center}
+\setlength{\footskip}{10mm}
+
+\renewcommand{\contentsname}{СОДЕРЖАНИЕ}
+
+\begin{center}
+\MakeUppercase{ЗАМЕЧАНИЯ РУКОВОДИТЕЛЯ}
+\end{center}
 \newpage
 
-\ESKDthisStyle{formI}
+%% В ВГТУ по какой-то причине не считаются с существованием ЕСКД
+%\ESKDthisStyle{formI}
+%\setcounter{page}{3}
 \tableofcontents
 \newpage
 
@@ -59,23 +99,25 @@
 %%\include{led_pwm}
 
 %% Библиография
+\renewcommand{\refname}{СПИСОК ЛИТЕРАТУРЫ}
+
 \begin{thebibliography}{99}
 \bibitem{lessing} Lawrence Lessig. ''Free culture: how big media uses technology and the law to lock down
-culture and control creativity'', ''Rebuilding Free Culture: One Idea'', KF2979.L47 200, ст. 282
+culture and control creativity'', ''Rebuilding Free Culture: One Idea'', KF2979.L47, с. 345
 \bibitem{electric} http://www.staticfreesoft.com/electric.html
 \bibitem{geda} http://en.wikipedia.org/wiki/Geda
-\bibitem{avrref} Atmel corp., ''XMEGA A MANUAL'', ст. 129, ст. 190, ст. 317
-\bibitem{avrxm} http://atxmega.narod.ru/, структурное описание
-\bibitem{avrev} Евстифеев А.В. ''Микроконтроллеры AVR семейства Mega''., М.: Додэка-XXI, 2007
-\bibitem{technob} Одинцов В., ''Профессиональное программирование. Системный подход. 2 изд.'', BHV-СПб 2006, ст. 405
-\bibitem{erlang} Francesco Cesarini, Simon Thompson, ''Erlang Programming'', 2009
-\bibitem{display} Displaysun, ''Specification for TFT LCD module DST2001PH'', DST2001PH REV B, 2008/02/23
-\bibitem{ili9320} ILITek., ''a-Si TFT LCD Single Chip Driver 240RGBx320 Resolution and 16.7M color''
-\bibitem{avradc} Atmel corp., ''AVR1300: Using the XMEGA ADC'', Rev. 8033B-AVR-04/08
-\bibitem{mc34119} Freescale Semiconductor, ''Low power audio amplifier 34119. Technical Data.'', Rev. 3.0, 12/2006
-\bibitem{avrdac} Atmel corp., ''AVR1301: Using the XMEGA DAC'', Rev. 8033B-AVR-04/08
-\bibitem{avrspi} Atmel corp., ''AVR1309: Using the XMEGA SPI'', Rev. 8057A-AVR-02/08
-\bibitem{enc28j60} Microchip inc., ''ENC28J60 Data Sheet. Stand-Alone Ethernet Controller with SPI Interface''
+\bibitem{avrref} Atmel corp., ''XMEGA A MANUAL'', с. 433
+\bibitem{avrxm} http://atxmega.narod.ru/, структурное описание, 
+\bibitem{avrev} Евстифеев А.В. ''Микроконтроллеры AVR семейства Mega''., М.: Додэка-XXI, 2007, с. 587
+\bibitem{technob} Одинцов В., ''Профессиональное программирование. Системный подход. 2 изд.'', BHV-СПб 2006, с. 405
+\bibitem{erlang} Francesco Cesarini, Simon Thompson, ''Erlang Programming'', 2009, с. 470
+\bibitem{display} Displaysun, ''Specification for TFT LCD module DST2001PH'', DST2001PH REV B, 2008/02/23, с. 24
+\bibitem{ili9320} ILITek., ''a-Si TFT LCD Single Chip Driver 240RGBx320 Resolution and 16.7M color'', с. 115
+\bibitem{avradc} Atmel corp., ''AVR1300: Using the XMEGA ADC'', Rev. 8033B-AVR-04/08, с. 6
+\bibitem{mc34119} Freescale Semiconductor, ''Low power audio amplifier 34119. Technical Data.'', Rev. 3.0, 12/2006, с. 16
+\bibitem{avrdac} Atmel corp., ''AVR1301: Using the XMEGA DAC'', Rev. 8033B-AVR-04/08, с. 8
+\bibitem{avrspi} Atmel corp., ''AVR1309: Using the XMEGA SPI'', Rev. 8057A-AVR-02/08, с. 6
+\bibitem{enc28j60} Microchip inc., ''ENC28J60 Data Sheet. Stand-Alone Ethernet Controller with SPI Interface'', с. 93
 \end{thebibliography}
 \end{document}
 
