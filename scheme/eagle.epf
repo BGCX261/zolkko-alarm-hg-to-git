@@ -11,14 +11,15 @@ UsedLibrary="/Users/zolkko/Applications/lbr/crystal.lbr"
 UsedLibrary="/Users/zolkko/Applications/lbr/enc28j60.lbr"
 UsedLibrary="/Users/zolkko/Applications/lbr/pinhead.lbr"
 UsedLibrary="/Users/zolkko/Applications/lbr/rcl.lbr"
+UsedLibrary="SparkFun.lbr"
 
 [Win_1]
 Type="Schematic Editor"
-Loc="61 22 1439 877"
+Loc="63 22 1439 877"
 State=1
 Number=2
 File="main.sch"
-View="-1312576 -152345 1397052 1791507"
+View="-1657517 4252938 -1361745 4690558"
 WireWidths=" 0 3048 6096 8128 10160 12700 14224 16764 17780 19304 21844 25400 38100 64516 4064 1524"
 PadDiameters=" 2540 3048 4064 6096 8128 10160 12700 14224 16764 17780 19304 21844 25400 38100 64516 0"
 PadDrills=" 5000 6000 7000 9000 10000 11000 12000 13000 14000 15000 16000 20000 22000 28000 32000 8000"
@@ -50,13 +51,13 @@ ArcDirection=0
 AddLevel=2
 PadsSameType=0
 Layer=91
-Views=" 1: -1312576 -152345 1397052 1791507"
+Views=" 1: -1657517 4252938 -1361745 4690558"
 Sheet=1
 
 [Win_2]
 Type="Control Panel"
-Loc="57 22 1439 877"
-State=1
+Loc="450 250 1049 649"
+State=2
 Number=0
 
 [Desktop]

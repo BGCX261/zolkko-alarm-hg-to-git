@@ -1,0 +1,138 @@
+html, body {
+	margin:0;
+	padding:0;
+	min-height: 100% !important;
+	min-height: auto;
+	height: 100%;
+	font-size: 12pt;
+}
+
+.clr { clear: both; font-size:0px; }
+
+#page { height: 100%; }
+
+#head {
+	height: 5em;
+	width: 90%;
+	margin: 0 auto 2em auto;
+}
+
+#head img {
+	border: none;
+	float: left;
+    margin: 2em 0 0 0;
+}
+
+#head h1 {
+	padding:0;
+	font-size: 2em;
+	color: #a55218;
+	float: right;
+	clear: right;
+	font-weight: bold;
+}
+
+#head h2 {
+	margin: 0;
+	padding: 0;
+	float: right;
+	clear: right;
+	font-size: 0.8em;
+	font-weight: normal;
+	white-space: nowrap;
+    margin: -1.6em 0 0 0;
+}
+
+div.row {
+	margin: 0;
+	text-align: center;
+	vertical-align: top;
+	clear:both;
+}
+
+div.row div.cell {
+	padding: 0 0.2em 0 0.2em;
+	vertical-align: top;
+	text-align: center;
+	width: 30%;
+}
+
+div.cell {
+	float: left;
+	min-width: 250px;
+	border: solid 1px #fff; /* FF bug */
+}
+
+div.row {
+	padding-left: 10%;
+}
+
+/**
+ * dialog
+ */
+ul { margin: 0; padding: 0; list-style: none; }
+ul a { text-decoration: none; font-weight: bold; color: #228; }
+ul li { border-bottom: solid 1px #ccc; }
+
+.dlg {
+	text-align:left;
+	background: #fff url('img/right.gif') right top repeat-y;
+	white-space: normal;
+	white-space: normal;
+	width: 250px;
+	margin: 0 auto;
+	height: 100%;
+}
+
+.dlg .t {
+	height: 36px;
+	background: transparent url('img/hr.gif') 0px -48px repeat-x;
+	cursor:move;
+	padding: 0 !important;
+	text-align: left;
+	-moz-user-select:none;
+}
+
+.dlg .t span {
+	float: left;
+	font-weight: bold;
+	position: relative;
+	top: 50%;
+	padding: 0.5em 0 0 1em;
+	margin-top: -16px;
+}
+
+.dlg .tl {
+	float: left;
+	width: 12px;
+	height :36px;
+	background: transparent url('img/hr.gif') 0px 0px no-repeat;
+}
+
+.dlg .tr {
+	float: right;
+	width: 12px;
+	height: 36px;
+	background: transparent url('img/hr.gif') -12px 0px no-repeat;
+}
+
+.dlg .c {
+	background: transparent url('img/left.gif') left top repeat-y;
+	padding: 0.2em 1em 0.2em 1em !important;
+	overflow: hidden;
+}
+
+.dlg .b { height: 12px; background: transparent url('img/hr.gif') 0px -84px repeat-x; }
+
+.dlg .bl {
+	float: left;
+	width: 12px; height: 12px;
+	background: transparent url('img/hr.gif') 0px -36px no-repeat;
+}
+
+.dlg div.br {
+	float: right;
+	width: 12px; height: 12px;
+	background: transparent url('img/hr.gif') -12px -36px no-repeat;
+}
+
