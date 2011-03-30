@@ -19,29 +19,34 @@
 			<h2>АСУ коптильной камеры</h2>
 		</div>
 
-        <div id="page_1">
-            <div class="row">
-                <table class="tabsTable">
-                    <tbody>
-                        <tr>
-                            <td>
-                                <div style="display:block" class="simpleTabs" menuFilled>
-                                    <ul class="tabs">
-                                        <li class="first"><p><a class="tabs" href="#">Общее</a></p></li>
-                                        <li class="selected"><p><a class="tabs" href="#">Датчик 1</a></p></li>
-                                        <li class=""><p><a class="tabs" href="#">Конфигурация</a></p></li>
-                                        <li class="last"><p><a class="tabs" href="#">Справка</a></p></li>
-                                    </ul>
-                                </div>
-                            </td>
-                            <td class="besideContent"></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+        <div class="row">
+            <table id="tabs" class="tabsTable">
+                <tbody>
+                    <tr>
+                        <td>
+                            <div style="display:block" class="simpleTabs" menuFilled>
+                                <ul class="tabs">
+                                    <li id="main" class="first"><p><a class="tabs" href="#">Общее</a></p></li>
+                                    <li id="dev" class="selected"><p><a class="tabs" href="#">Датчик 1</a></p></li>
+                                    <li id="conf" class=""><p><a class="tabs" href="#">Конфигурация</a></p></li>
+                                    <li id="help" class="last"><p><a class="tabs" href="#">Справка</a></p></li>
+                                </ul>
+                            </div>
+                        </td>
+                        <td class="besideContent"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div id="main_page" style="display:none">
+            This is main page
+        </div>
+        
+        <div id="dev_page" style="display:none">
             <div class="row">
                 <div id="c0" class="cell" style="width:60%" title="Показатели датчиков">
-                    <div id="plot" style="width:100%;min-height:350px;min-width:100px">loading...</div>
+                    <div id="plot" style="width:100%;min-height:350px;min-width:100px;overflow:hide"></div>
                 </div>
                 <div id="c1" class="cell" style="width:39%">
                     <div class="row">
@@ -56,6 +61,10 @@
                 <div id="c4" style="width:100%" title="Доступные программы">loading...</div>
             </div>
         </div>
+        
+        <div id="conf_page" style="display:none">This is a configuration page</div>
+        
+        <div id="help_page" style="display:none">This is a help page</div>
 	</div>
 </body>
 </html>

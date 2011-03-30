@@ -100,16 +100,76 @@
 	};
 })(jQuery);
 
-(function ($) {
-    $.fn.tabify = function () {
-        return this;
+(function ($) { 
+    var __tabify = function (self, onChanged) {
+        var selectedId = null;
+        
+        $(tabs).find("ul.tabs li").each(function (index, value) {
+            var idx = index;
+            var obj = $(value);
+            var id = obj.attr("id");
+            
+            if (obj.hasClass("selected")) {
+                selectedId = id;
+                $("#" + id + "_page").css("display", "block");
+                
+                if ($.isFunction(onChanged)) {
+                    onChanged(obj, idx);
+                }
+            }
+            
+            obj.click(function () {
+                if (id != selectedId) {
+                    $("#" + selectedId).removeClass("selected");
+                    $("#" + selectedId + "_page").css("display", "none");
+                }
+                
+                $("#" + id).addClass("selected");
+                $("#" + id + "_page").css("display", "block");
+                selectedId = id;
+                
+                if ($.isFunction(onChanged)) {
+                    onChanged(obj, idx);
+                }
+            });
+        });
+        return self;
+    }
+    
+    $.fn.tabify = function (onChanged) {
+        return this.each (function () {
+            return __tabify($(tabs), onChanged);
+        });
     }
 })(jQuery);
 
 $(function () {
+    // Add boxes on sensor page
     $("#c0").addbox();
     $("#c2").addbox();
     $("#c3").addbox();
     $("#c4").addbox();
+    
+    // Adds chart on
+    var r = Raphael("plot", "100%", 350);
+    r.g.txtattr.font = "12px 'Fontin Sans', Fontin-Sans, sans-serif";
+    var lines = r.g.linechart(15, 15, 550, 320,
+                        [[1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6]],
+                        [[7, 6, 5, 4, 3, 2, 1], [0, 1, 2, 3, 4, 5, 6]],
+                        {nostroke: false, axis: "0 0 1 1", symbol: "x", smooth: true});
+    lines.hoverColumn(function () {
+        this.tags = r.set();
+        for (var i = 0, ii = this.y.length; i < ii; i++) {
+            this.tags.push(r.g.popup(this.x, this.y[i], this.values[i], 150, 10)
+                .insertBefore(this)
+                .attr([{fill: "#000"}, {fill: this.symbols[i].attr("fill")}]));
+        }
+    }, function () {
+        this.tags && this.tags.remove();
+    });
+    lines.symbols.attr({r: 3});
+    
+    // Enables tabs. Refresh tabs.
+    $("#tabs").tabify();
 });
 
