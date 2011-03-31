@@ -1,4 +1,6 @@
 #!/bin/sh
-cd `dirname $0`
-make
-exec erl -pa $PWD/ebin $PWD/deps/*/ebin -boot start_sasl -s reloader -s smokehouse -mnesia dir '"db"'
+# NOTE: mustache templates need \ because they are not awesome.
+exec erl -pa ebin edit deps/*/ebin -boot start_sasl \
+    -sname smokehouse_dev \
+    -s smokehouse \
+    -s reloader -mnesia dir '"db"'

@@ -1,10 +1,10 @@
-%% @author Alex Anisimov aka lx <zolkko@gmail.com>
-%% @copyright 2011 Alex Anisimov.
+%% @author Mochi Media <dev@mochimedia.com>
+%% @copyright 2010 Mochi Media <dev@mochimedia.com>
 
-%% @doc Smoke House application
+%% @doc smokehouse.
 
 -module(smokehouse).
--author('Alex Anisimov aka lx <zolkko@gmail.com>').
+-author("Mochi Media <dev@mochimedia.com>").
 -export([start/0, stop/0]).
 
 ensure_started(App) ->
@@ -15,6 +15,7 @@ ensure_started(App) ->
             ok
     end.
 
+
 %% @spec start() -> ok
 %% @doc Start the smokehouse server.
 start() ->
@@ -22,10 +23,8 @@ start() ->
     ensure_started(crypto),
     application:start(smokehouse).
 
+
 %% @spec stop() -> ok
 %% @doc Stop the smokehouse server.
 stop() ->
-    Res = application:stop(smokehouse),
-    %% TODO: ensure database backend stopped
-    application:stop(crypto),
-    Res.
+    application:stop(smokehouse).

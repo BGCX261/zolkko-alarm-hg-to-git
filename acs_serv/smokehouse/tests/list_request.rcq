@@ -1,2 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<rest-client version="2.3"><request><http-version>1.1</http-version><URL>http://localhost:9090</URL><method>GET</method><headers><header key="Device-View" value="{&quot;center&quot;:{&quot;latitude&quot;:2.3, &quot;longitude&quot;:-4.2}, &quot;span&quot;:{&quot;latitude&quot;:-50, &quot;longitude&quot;:-20}, &quot;location&quot;: {&quot;latitude&quot;: 0.0, &quot;longitude&quot;: 0.0}}"/><header key="Device-Password" value="pASSWORD"/><header key="Device-UID" value="TEST_DEVICE_UID"/></headers></request></rest-client>

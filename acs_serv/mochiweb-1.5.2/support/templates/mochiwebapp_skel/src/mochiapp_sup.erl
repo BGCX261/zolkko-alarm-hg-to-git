@@ -1,10 +1,10 @@
-%% @author Alex Anisimov <zolkko@gmail.com>
-%% @copyright 2011 Alex Anisimov <zolkko@gmail.com>
+%% @author {{author}}
+%% @copyright {{year}} {{author}}
 
-%% @doc Supervisor for the smokehouse application.
+%% @doc Supervisor for the {{appid}} application.
 
--module(smokehouse_sup).
--author("Mochi Media <dev@mochimedia.com>").
+-module({{appid}}_sup).
+-author("{{author}}").
 
 -behaviour(supervisor).
 
@@ -41,7 +41,7 @@ upgrade() ->
 %% @spec init([]) -> SupervisorTree
 %% @doc supervisor callback.
 init([]) ->
-    Web = web_specs(smokehouse_web, 8080),
+    Web = web_specs({{appid}}_web, {{port}}),
     Processes = [Web],
     Strategy = {one_for_one, 10, 10},
     {ok,
@@ -50,8 +50,7 @@ init([]) ->
 web_specs(Mod, Port) ->
     WebConfig = [{ip, {0,0,0,0}},
                  {port, Port},
-                 {docroot, smokehouse_deps:local_path(["priv", "www"])}],
+                 {docroot, {{appid}}_deps:local_path(["priv", "www"])}],
     {Mod,
      {Mod, start, [WebConfig]},
      permanent, 5000, worker, dynamic}.
-

@@ -1,26 +1,26 @@
-%% @author Mochi Media <dev@mochimedia.com>
-%% @copyright 2010 Mochi Media <dev@mochimedia.com>
+%% @author {{author}}
+%% @copyright {{year}} {{author}}
 
-%% @doc Web server for smokehouse.
+%% @doc Web server for {{appid}}.
 
--module(smokehouse_web).
--author("Mochi Media <dev@mochimedia.com>").
+-module({{appid}}_web).
+-author("{{author}}").
 
--export([start/1, stop/0, loop/3]).
+-export([start/1, stop/0, loop/2]).
 
 %% External API
 
 start(Options) ->
-    DbService = db_service:start(mnesia_service),
     {DocRoot, Options1} = get_option(docroot, Options),
-    Loop = fun (Req) -> ?MODULE:loop(Req, DocRoot, DbService) end,
+    Loop = fun (Req) ->
+                   ?MODULE:loop(Req, DocRoot)
+           end,
     mochiweb_http:start([{name, ?MODULE}, {loop, Loop} | Options1]).
 
 stop() ->
-    db_service:stop(mnesia_service),
     mochiweb_http:stop(?MODULE).
 
-loop(Req, DocRoot, DbService) ->
+loop(Req, DocRoot) ->
     "/" ++ Path = Req:get(path),
     try
         case Req:get(method) of
@@ -44,9 +44,9 @@ loop(Req, DocRoot, DbService) ->
                       {type, Type}, {what, What},
                       {trace, erlang:get_stacktrace()}],
             error_logger:error_report(Report),
-            %% NOTE: mustache templates need \ because they are not awesome.
+            %% NOTE: mustache templates need \\ because they are not awesome.
             Req:respond({500, [{"Content-Type", "text/plain"}],
-                         "request failed, sorry\n"})
+                         "request failed, sorry\\n"})
     end.
 
 %% Internal API

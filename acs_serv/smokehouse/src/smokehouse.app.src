@@ -1,0 +1,9 @@
+%% -*- erlang -*-
+{application, smokehouse,
+ [{description, "smokehouse"},
+  {vsn, "0.1"},
+  {modules, []},
+  {registered, []},
+  {mod, {'smokehouse_app', []}},
+  {env, [{db_service_module, "mnesia_service"}]},
+  {applications, [kernel, stdlib, crypto]}]}.
