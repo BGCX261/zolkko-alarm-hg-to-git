@@ -149,6 +149,7 @@ $(function () {
     $("#c2").addbox();
     $("#c3").addbox();
     $("#c4").addbox();
+    $("#c5").addbox();
     
     // Adds chart on
     var r = Raphael("plot", "100%", 350);
@@ -171,5 +172,92 @@ $(function () {
     
     // Enables tabs. Refresh tabs.
     $("#tabs").tabify();
+    
+    $("#next").click(function () {
+        $(this).attr("disabled", "disabled");
+        $("#terminate").attr("disabled", "disabled");
+        $.get("next_operation", function (data, statusText, jqXHD) {
+        })
+        .error(function () {
+            alert("Operation failed");
+        })
+        .complete(function () {
+            $("#next").attr("disabled", "");
+            $("#terminate").attr("disabled", "");
+        });
+    });
+    
+    $("#terminate").click(function () {
+        $("#next").attr("disabled", "disabled");
+        $(this).attr("disabled", "disabled");
+        $.get("terminate_operation", function (data, statusText, jqXHD) {
+            //
+        })
+        .error(function () {
+            //
+        })
+        .complete(function () {
+            $("#next").attr("disabled", "");
+            $("#terminate").attr("disabled", "");
+        });
+    });
+    
+    $("#update_time").click(function () {
+        $(this).attr("disabled", "disabled");
+        $.post("update_time", {"time": $("#time").val().trim()}, function (data, textStatus, jqXHD) {
+            //
+        }, "text/json")
+        .error(function (error) {
+            alert(error.responseText);
+        })
+        .complete(function () {
+            $("#update_time").attr("disabled", "");
+        });
+    });
+    
+    // Get status
+    $.getJSON("status", function (list, textStatus, jqXHR) {
+        var ostat = $("#stat").empty();
+        if (ostat) {
+            if (list && list.length) {
+                var currentTemperature = 22;
+                for (var i = 0; i < list.length; i++) {
+                    var item = list[i];
+                    var text = item.name + ". Длительность " + item.duration + " мин. ";
+                    
+                    if (item.temperature.dynamic) {
+                        var newTemperature = parseInt(item.temperature.value, 10);
+                        if (newTemperature > currentTemperature) {
+                            text += "Повысить температуру до " + newTemperature + "&deg;C. ";
+                        } else if (newTemperature < currentTemperature) {
+                            text += "Понизить температуру до " + newTemperature + "&deg;C. ";
+                        } else {
+                            text += "Оставить температуру на преджнем уровне. ";
+                        }
+                        currentTemperature = newTemperature;
+                    } else {
+                        currentTemperature = parseInt(item.temperature.value, 10);
+                        text += "Температура " + item.temperature.value + "&deg;C. ";
+                    }
+                    
+                    if (item.smog) {
+                        text += "Включить подачу дыма. ";
+                    }
+                    
+                    var listItem = $("<li></li>");
+                    if (item.finished) {
+                        listItem.addClass("finished");
+                    } else if (item.start_stamp) {
+                        text += "<img src=\"img/running_green_transparent.gif\" alt=\"in progress\" />";
+                    }
+                    
+                    ostat.append(listItem.html(text));
+                    $("#next, #terminate").attr("disabled", "");
+                }
+            } else {
+                $("#next, #terminate").attr("disabled", "disabled");
+            }
+        }
+    });
 });
 

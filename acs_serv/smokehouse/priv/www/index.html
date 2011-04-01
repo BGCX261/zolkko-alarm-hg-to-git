@@ -67,22 +67,19 @@
                 <div id="c1" class="cell" style="width:39%">
                     <div class="row">
                         <div id="c2" class="cell" style="width:100%" title="Операция / Статус">
-							<ol>
-								<li class="finished"> Сушка. Длительность: 00:20 мин. Температура: 95&deg;C. </li>
-								<li class="finished"> Прогонка. Длительность: 00:10 мин. Температура: 95&deg;C. Включить подачу дыма. </li>
-								<li>Остывание. Длительность: 01:30. Снизить температуру до 30&deg;C. (Осталось <span id="timeLeft">00:02 мин.</span>) <img src="img/running_green_transparent.gif" alt="in progress" /> </li>
+							<ol id="stat">
 							</ol>
 							
-							<form action="/controlop" method="post">
-								<input type="hidden" value="" />
-								<input type="button" value="Следующая операция" />
-								<input type="button" value="Прервать программу" />
+							<form id="opctrl" action="/opctrl" method="post">
+								<input id="action" type="hidden" value="" />
+								<input id="next" disabled type="button" value="Следующая операция" />
+								<input id="terminate" disabled type="button" value="Прервать программу" />
 							</form>
 						</div>
                     </div>
                     <div class="row">
                         <div id="c3" class="cell" style="width:100%" title="Параметры">
-							<div>Время установленное на устройстве: <input type="text" value="12:13" /> <input type="button" value="update" /></div>
+							<div>Время установленное на устройстве: <input id="time" type="text" value="12:13" /> <input id="update_time" type="button" value="Обновить" /></div>
 						</div>
                     </div>
                 </div>
@@ -105,9 +102,9 @@
 						</tbody>
 					</table>
 				</form>
-				hellow all
 			</div>
 		</div>
+
 	</div>
 </body>
 </html>
