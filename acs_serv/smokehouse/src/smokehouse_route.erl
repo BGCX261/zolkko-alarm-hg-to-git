@@ -20,6 +20,15 @@ route(Req) ->
 		{'GET', "psy_table_version"} -> {get, "psy_table_version"};
 		{'GET', "sensor"} -> {get, "sensor"};
         {'GET', _} -> {get, Path};
+        {'POST', "sensor_add"} ->
+            case lists:keyfind("name", 1, Post) of
+                false -> {error, not_found};
+                {_, Name} ->
+                    case lists:keyfind("address", 1, Post) of
+                        false -> {error, not_found};
+                        {_, Url} -> {post, "sensor_add", Name, Url}
+                    end
+            end;
         {'POST', "update_time"} ->
             case lists:keyfind("time", 1, Post) of
                 {"time", NewValue} -> {post, "update_time", NewValue};

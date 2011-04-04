@@ -38,6 +38,9 @@ loop(Req, DocRoot, DbService) ->
             {get, Url} ->
                 Req:serve_file(Url, DocRoot);
             
+            {post, "sensor_add", Name, Url} ->
+                sensor_add(Req, DbService, Name, Url);
+            
             {post, "update_time", NewTime} ->
                 update_time(Req, NewTime);
             
@@ -106,6 +109,16 @@ return_status(Req) ->
         {<<"smog">>, false}]},
     StatusData = mochijson2:encode({array, [A1, A2, A3, A4]}),
     Req:ok({"text/json", response_headers(), StatusData}).
+
+%% @spec sensor_add(Req, DbService, Name, Url) -> Response .
+%% @doc Adds new sensor to database
+sensor_add(Req, DbService, Name, Url) ->
+    %% Data = case db_service:add_sensor(DbService, Name, Url) of
+    %%  false -> error
+    %%  true  -> normal
+    %% end,
+    Data = mochijson2:encode({struct, [{<<"result">>, true}, {<<"reason">>, <<"">>}]}),
+    Req:ok({"text/json", response_headers(), Data}).
 
 %% @spec return_sensor() -> Response .
 %% @doc Returns data for each sensor

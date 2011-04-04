@@ -38,24 +38,27 @@
         </div>
         
         <div id="main_page" style="display:none">
-			<div style="margin:0 auto 0 auto; width:90%">
-				<table>
-					<thead>
-						<th>
-							<td>Номер</td>
-							<td>Коптильная камера</td>
-							<td>Статус</td>
-						</th>
-					</thead>
-					<tbody>
-						<tr>
-							<td>1</td>
-							<td>Коптильная камера расположенная на  пром зоне</td>
-							<td>ожидание</td>
-						</tr>
-					</tbody>
-				</table>
-			</div>
+            <div class="row">
+                <div class="cell" style="width:65%" title="Список коптильных камер">
+                    <table id="sensor_tbl" width="100%">
+                        <tr>
+                            <td><b>Название</b></td>
+                            <td><b>Адрес</b></td>
+                            <td><b>Вкл./Выкл.</b></td>
+                        <tr>
+                    </table>
+                </div>
+                
+                <div class="cell" style="width:34%" title="Добавить">
+                    <span id="sensor_stat"></span>
+                    <input id="sensor_name" type="text" name="name" placeholder="Название/Расположение" required />
+                    <input id="sensor_url" type="url" name="address" placeholder="http://192.168.1.54:80" required />
+                    <div>
+                        <input id="sensor_test" type="button" value="Тест" />
+                        <input id="sensor_add" type="button" value="Добавить" />
+                    </div>
+                </div>
+            </div>
         </div>
         
         <div id="dev_page" style="display:none">

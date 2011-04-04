@@ -144,12 +144,76 @@
 })(jQuery);
 
 $(function () {
-    // Add boxes on sensor page
-    $("#c0").addbox();
-    $("#c2").addbox();
-    $("#c3").addbox();
-    $("#c4").addbox();
-    $("#c5").addbox();
+    $(".cell").addbox();
+    
+    $("#sensor_test").click(function (e) {
+        var self = $(this);
+        self.attr("disabled", "disabled");
+        $.post("sensor_test", {"address": $("#sensor_url").val()},
+            function (data) {
+                if (data.result) {
+                    $("#sensor_stat").empty().append("<img src=\"img/accept.png\" alt=\"accept\" />");
+                } else {
+                    $("#sensor_stat").empty().append("<img src=\"img/error.png\" alt=\"error\" />");
+                }
+            }, "text/json")
+            .error(function (error) {
+                if (console && console.log) {
+                    console.log(error);
+                }
+                $("#sensor_stat").empty().append("<img src=\"img/error.png\" alt=\"error\" />");
+            })
+            .complete(function () {                
+                self.attr("disabled", "");
+            });
+    });
+    
+    $("#sensor_add").click(function (e) {
+        var self = $(this);
+        self.attr("disabled", "disabled");
+        var postData = {"address": $("#sensor_url").val(), "name": $("#sensor_name").val()};
+        $.post("sensor_add", postData,
+            function (data) {
+                if (data.result) {
+                    var tr = $("#sensor_tbl tr:last").after("<tr></tr>");
+                    tr.append($("<td><span id=\"sensor_1_stat\"></span></td>").text($("#sensor_name").val()));
+                    tr.append($("<td></td>").text($("#sensor_url").val()));
+                    tr.append($("<td></td>")
+                        .append($("<input type=\"button\" value=\"Тест\" />").click(function () {
+                            // TODO: test
+                        }))
+                        .append($("<input type=\"button\" value=\"Вкл.\" />").click(function () {
+                            // TODO: open box
+                        })));
+                    $("#sensor_name").val("");
+                    $("#sensor_url").val("");
+                } else {
+                    // TODO: false
+                }
+            }, "json")
+            .error(function (error) {
+                if (console && console.log) {
+                    console.log(error);
+                }
+            })
+            .complete(function () {                
+                self.attr("disabled", "");
+            });
+    });
+    
+    function SmokeHouseView(aName) {
+        this.name = aName;
+    }
+    
+    SmokeHouseView.prototype = {
+        init: function () {
+            //
+        },
+        
+        activate: function () {
+            // TODO: Activate smoke house view
+        }
+    };
 	
 	// Plotter
 	function SensorView (container) {
