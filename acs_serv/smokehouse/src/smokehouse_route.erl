@@ -17,6 +17,8 @@ route(Req) ->
     Post = Req:parse_post(),
 	case {Req:get(method), Path} of
 		{'GET', "status"} -> {get, "status"};
+		{'GET', "psy_table_version"} -> {get, "psy_table_version"};
+		{'GET', "sensor"} -> {get, "sensor"};
         {'GET', _} -> {get, Path};
         {'POST', "update_time"} ->
             case lists:keyfind("time", 1, Post) of

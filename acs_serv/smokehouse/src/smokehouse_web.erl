@@ -28,7 +28,13 @@ loop(Req, DocRoot, DbService) ->
         case smokehouse_route:route(Req) of
             {get, "status"} ->
                 return_status(Req);
-            
+			
+			{get, "psy_table_version"} ->
+				return_psy_table_version(Req);
+			
+			{get, "sensor"} ->
+				return_sensor_data(Req);
+			
             {get, Url} ->
                 Req:serve_file(Url, DocRoot);
             
@@ -63,6 +69,11 @@ update_time(Req, NewTime) ->
 response_headers() ->
     [{"Server", "ACS Smoke House v0.0.1"}].
 
+%% @spec return_psy_table_version(Request) -> Respose .
+%% @doc Returns	 psy table version from device
+return_psy_table_version(Req) ->
+	Req:ok({"text/json", response_headers(), mochijson2:encode({struct, [{<<"version">>, <<"qwe7613hg1236teaw">>}]})}).
+
 %% @spec return_status(Request) -> Response .
 %% @doc Returns JSONed device status.
 return_status(Req) ->
@@ -95,6 +106,21 @@ return_status(Req) ->
         {<<"smog">>, false}]},
     StatusData = mochijson2:encode({array, [A1, A2, A3, A4]}),
     Req:ok({"text/json", response_headers(), StatusData}).
+
+%% @spec return_sensor() -> Response .
+%% @doc Returns data for each sensor
+return_sensor_data(Req) ->
+	{_, Minute, Second} = time(),
+	% External sensor
+	Sensor1 = {struct, [{<<"id">>, 1}, {<<"value">>, (random:uniform(80) + random:uniform(100) / 10) + 20}, {<<"time">>,  (Minute * 60 + Second)}]},
+	% Hot internal sensor
+	Sensor2 = {struct, [{<<"id">>, 2}, {<<"value">>, (random:uniform(80) + random:uniform(100) / 10) + 20}, {<<"time">>,  (Minute * 60 + Second)}]},
+	% Dry internal sensor
+	Sensor3 = {struct, [{<<"id">>, 3}, {<<"value">>, (random:uniform(80) + random:uniform(100) / 10) + 20}, {<<"time">>,  (Minute * 60 + Second)}]},
+	% humidity
+	Sensor4 = {struct, [{<<"id">>, 4}, {<<"value">>, random:uniform(75) + random:uniform(100) / 10}, {<<"time">>,  (Minute * 60 + Second)}]},
+	Data = {array, [Sensor1, Sensor2, Sensor3, Sensor4]},
+	Req:ok({"text/plain", response_headers(), mochijson2:encode(Data)}).
 
 %%
 %% Tests

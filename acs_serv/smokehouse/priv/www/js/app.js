@@ -150,25 +150,75 @@ $(function () {
     $("#c3").addbox();
     $("#c4").addbox();
     $("#c5").addbox();
-    
-    // Adds chart on
-    var r = Raphael("plot", "100%", 350);
-    r.g.txtattr.font = "12px 'Fontin Sans', Fontin-Sans, sans-serif";
-    var lines = r.g.linechart(15, 15, 550, 320,
-                        [[1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6]],
-                        [[7, 6, 5, 4, 3, 2, 1], [0, 1, 2, 3, 4, 5, 6]],
-                        {nostroke: false, axis: "0 0 1 1", symbol: "o", smooth: true});
-    lines.hoverColumn(function () {
-        this.tags = r.set();
-        for (var i = 0, ii = this.y.length; i < ii; i++) {
-            this.tags.push(r.g.popup(this.x, this.y[i], this.values[i], 10, 10)
-                .insertBefore(this)
-                .attr([{fill: "#000"}, {fill: this.symbols[i].attr("fill")}]));
-        }
-    }, function () {
-        this.tags && this.tags.remove();
-    });
-    lines.symbols.attr({r: 3});
+	
+	// Plotter
+	function SensorView (container) {
+		this.totalPoints = 30;
+		
+		this.dataset = dataset = [
+			{label: "Сухой &deg;C", data: []},
+			{label: "Влажный &deg;C", data: []},
+			{label: "Внешний &deg;C", data: []},
+			{label: "Влажность %", data: []}
+		];
+		for (var i = 0; i < this.dataset.length; i++) {
+			for (var j = 0; j < this.totalPoints; j++) {
+					this.dataset[i].data.push([j, 22]);
+			}
+		}
+		
+		this.plot = $.plot(container, this.dataset, {
+			series: {shadowSize: 0},
+			yaxis: {min: -10, max: 125},
+			xaxis: {show: false}
+		});
+	}
+	
+	SensorView.prototype = {
+		update: function (url, onBeforeUpdate, onAfterUpdate) {
+			if ($.isFunction(onBeforeUpdate)) {
+				onBeforeUpdate();
+			}
+			
+			function normalizeValue(value) {
+				var result = parseFloat(value, 10);
+				if (result < 0) {
+					result = 0;
+				} else if (result > 120) {
+					result = 100;
+				}
+				return result;
+			}
+			
+			var self = this;
+			$.getJSON(url, function (data, textStatus, jqXHD) {
+				for (var i = 0; i < self.dataset.length; i++) {
+					for (var j = 1; j < self.totalPoints; j++) {
+						self.dataset[i].data[j - 1][1] = self.dataset[i].data[j][1];
+					}
+				}
+				var last = self.totalPoints - 1;
+				for (var i = 0; i < data.length; i++) {
+					self.dataset[i].data[last][1] = normalizeValue(data[i].value);
+				}
+				self.plot.setData(self.dataset);
+				self.plot.draw();
+			})
+			.error(function (err) {
+				if (console && console.log) {
+					console.log(err);
+				}
+			})
+			.complete(function () {
+				if ($.isFunction(onAfterUpdate)) {
+					onAfterUpdate();
+				}
+			});
+		}
+	};
+	
+	var sensor = new SensorView($("#plot"));
+	sensor.update("sensor");
     
     // Enables tabs. Refresh tabs.
     $("#tabs").tabify();
@@ -214,6 +264,26 @@ $(function () {
             $("#update_time").attr("disabled", "");
         });
     });
+	
+	$("#sensor_refresh").click(function () {
+		var self = $(this);
+		sensor.update("sensor",
+			function () {
+				self.attr("disabled", "disabled")
+			},
+			function () {
+				self.attr("disabled", "")
+			});
+	});
+	
+	function load_psy_table_version() {
+		$.getJSON("psy_table_version", function (psyTable, textStatus, jqXHD) {
+			$("#psy_table_version").text(psyTable.version);
+		})
+		.error(function () {
+			$("#psy_table_version").text("Ошибка");
+		});
+	}
     
     // Get status
     $.getJSON("status", function (list, textStatus, jqXHR) {
@@ -221,6 +291,7 @@ $(function () {
         if (ostat) {
             if (list && list.length) {
                 var currentTemperature = 22;
+				var currentTask = -1;
                 for (var i = 0; i < list.length; i++) {
                     var item = list[i];
                     var text = item.name + ". Длительность " + item.duration + " мин. ";
@@ -247,17 +318,28 @@ $(function () {
                     var listItem = $("<li></li>");
                     if (item.finished) {
                         listItem.addClass("finished");
-                    } else if (item.start_stamp) {
+                    } else if (currentTask == -1 && item.start_stamp) {
                         text += "<img src=\"img/running_green_transparent.gif\" alt=\"in progress\" />";
+						currentTask = i;
                     }
                     
                     ostat.append(listItem.html(text));
-                    $("#next, #terminate").attr("disabled", "");
                 }
+				
+				if (currentTask == list.length) {
+					$("#next").attr("disabled", "");
+				} else {
+					$("#next").attr("disabled", "disabled");
+				}
+				
+				$("#next").attr("disabled", (currentTask != -1 && currentTask < list.length ? "" : "disabled"));
+				$("#terminate").attr("disabled", (list.length > 0 ? "" : "disabled"));
             } else {
                 $("#next, #terminate").attr("disabled", "disabled");
             }
         }
+		
+		load_psy_table_version();
     });
 });
 
