@@ -19,6 +19,7 @@ route(Req) ->
 		{'GET', "status"} -> {get, "status"};
 		{'GET', "psy_table_version"} -> {get, "psy_table_version"};
 		{'GET', "sensor"} -> {get, "sensor"};
+		{'GET', "nodes"} -> {get, "nodes"};
         {'GET', _} -> {get, Path};
         {'POST', "sensor_add"} ->
             case lists:keyfind("name", 1, Post) of

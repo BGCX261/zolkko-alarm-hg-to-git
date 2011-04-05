@@ -8,6 +8,8 @@
 
 -export([start/1, stop/0, loop/3]).
 
+-include("smokehouse.hrl").
+
 -define(SERVER_HEAD, "Server").
 -define(SERVER_NAME, "ACS Smoke House Server v0.0.1").
 
@@ -27,22 +29,19 @@ loop(Req, DocRoot, DbService) ->
     try
         case smokehouse_route:route(Req) of
             {get, "status"} ->
-                return_status(Req);
+                response_status(Req);
 			
 			{get, "psy_table_version"} ->
-				return_psy_table_version(Req);
+				response_psytable_version(Req);
 			
 			{get, "sensor"} ->
-				return_sensor_data(Req);
+				response_sensor_data(Req);
+			
+			{get, "nodes"} ->
+				response_nodes(Req, DbService);
 			
             {get, Url} ->
                 Req:serve_file(Url, DocRoot);
-            
-            {post, "sensor_add", Name, Url} ->
-                sensor_add(Req, DbService, Name, Url);
-            
-            {post, "update_time", NewTime} ->
-                update_time(Req, NewTime);
             
             _ ->
                 Req:respond({500, [{"Content-Type", "text/plain"} | response_headers()], []})
@@ -61,12 +60,20 @@ loop(Req, DocRoot, DbService) ->
 get_option(Option, Options) ->
     {proplists:get_value(Option, Options), proplists:delete(Option, Options)}.
 
-%% @spec uptime() -> Response .
-%% @doc TODO: update time on linked device
-update_time(Req, NewTime) ->
-    Req:respond({500,
-        [{"Content-Type", "text/plain"} | response_headers()],
-        "Failed to update device time."}).
+%% @spec response_nodes(Req, DbService) -> Response .
+%% @doc Returns list of smoke house nodes.
+response_nodes(Req, DbService) ->
+	case db_service:list(DbService) of
+		{failed, Reason} -> Req:respond({500, [{"Content-Type", "text/json"} | response_headers()], mochijson2:encode({struct, [{<<"error">>, Reason}]})});
+		List ->
+			JsonData = {array,
+							[{struct,
+									[{<<"name">>, X#node.name},
+									 {<<"address">>, X#node.address},
+									 {<<"port">>, X#node.port}]}
+								|| X <- List]},
+			Req:ok({"text/json", response_headers(), mochijson2:encode(JsonData)})
+	end.
 
 %% @spec response_headers() -> [ResponseHeaders::tuple()] .
 response_headers() ->
@@ -74,12 +81,12 @@ response_headers() ->
 
 %% @spec return_psy_table_version(Request) -> Respose .
 %% @doc Returns	 psy table version from device
-return_psy_table_version(Req) ->
+response_psytable_version(Req) ->
 	Req:ok({"text/json", response_headers(), mochijson2:encode({struct, [{<<"version">>, <<"qwe7613hg1236teaw">>}]})}).
 
 %% @spec return_status(Request) -> Response .
 %% @doc Returns JSONed device status.
-return_status(Req) ->
+response_status(Req) ->
     A1 = {struct,
         [{<<"finished">>, true},
         {<<"name">>, <<"Сушка">>},
@@ -110,19 +117,9 @@ return_status(Req) ->
     StatusData = mochijson2:encode({array, [A1, A2, A3, A4]}),
     Req:ok({"text/json", response_headers(), StatusData}).
 
-%% @spec sensor_add(Req, DbService, Name, Url) -> Response .
-%% @doc Adds new sensor to database
-sensor_add(Req, DbService, Name, Url) ->
-    %% Data = case db_service:add_sensor(DbService, Name, Url) of
-    %%  false -> error
-    %%  true  -> normal
-    %% end,
-    Data = mochijson2:encode({struct, [{<<"result">>, true}, {<<"reason">>, <<"">>}]}),
-    Req:ok({"text/json", response_headers(), Data}).
-
 %% @spec return_sensor() -> Response .
 %% @doc Returns data for each sensor
-return_sensor_data(Req) ->
+response_sensor_data(Req) ->
 	{_, Minute, Second} = time(),
 	% External sensor
 	Sensor1 = {struct, [{<<"id">>, 1}, {<<"value">>, (random:uniform(80) + random:uniform(100) / 10) + 20}, {<<"time">>,  (Minute * 60 + Second)}]},

@@ -26,8 +26,7 @@
                             <div style="display:block" class="simpleTabs" menuFilled>
                                 <ul class="tabs">
                                     <li id="main" class="first"><p><a class="tabs" href="#">Общее</a></p></li>
-                                    <li id="dev" class="selected"><p><a class="tabs" href="#">Коптильная камера 1</a></p></li>
-                                    <li id="conf" class="last"><p><a class="tabs" href="#">Конфигурация</a></p></li>
+                                    <li id="dev" class="selected last"><p><a class="tabs" href="#">Коптильная камера 1</a></p></li>
                                 </ul>
                             </div>
                         </td>
@@ -64,7 +63,7 @@
         <div id="dev_page" style="display:none">
             <div class="row">
                 <div id="c0" class="cell" style="width:60%" title="Показатели датчиков">
-                    <div id="plot" style="width:720px; height:330px; min-height:350px;min-width:100px;overflow:hide"></div>
+                    <div id="plot" style="width:100px;height:330px; min-height:350px;min-width:100px;overflow:hide"></div>
 					<input id="sensor_refresh" type="button" value="Обновить" />
                 </div>
                 <div id="c1" class="cell" style="width:39%">
@@ -88,26 +87,9 @@
                 </div>
             </div>
             <div class="row">
-                <div id="c4" style="width:100%" title="Доступные программы">loading...</div>
+                <div id="c4" class="cell" style="width:100%" title="Лог"></div>
             </div>
         </div>
-        
-        <div id="conf_page" style="display:none">
-			<div style="margin: 2em auto 0 auto; width:90%">
-				<form method="post">
-					<table>
-						<tbody>
-							<tr>
-								<td>Частота автоматического обновления</td>
-								<td><input type="text" value="0.0" /></td>
-								<td><input type="button" value="update" /></td>
-							</tr>
-						</tbody>
-					</table>
-				</form>
-			</div>
-		</div>
-
 	</div>
 </body>
 </html>

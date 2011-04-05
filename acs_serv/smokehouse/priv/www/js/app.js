@@ -101,7 +101,7 @@
 })(jQuery);
 
 (function ($) { 
-    var __tabify = function (self, onChanged) {
+    var __tabify = function (self) {
         var selectedId = null;
         
         $(tabs).find("ul.tabs li").each(function (index, value) {
@@ -112,10 +112,8 @@
             if (obj.hasClass("selected")) {
                 selectedId = id;
                 $("#" + id + "_page").css("display", "block");
-                
-                if ($.isFunction(onChanged)) {
-                    onChanged(obj, idx);
-                }
+               
+                self.trigger("tab.changed");
             }
             
             obj.click(function () {
@@ -127,10 +125,8 @@
                 $("#" + id).addClass("selected");
                 $("#" + id + "_page").css("display", "block");
                 selectedId = id;
-                
-                if ($.isFunction(onChanged)) {
-                    onChanged(obj, idx);
-                }
+               
+                self.trigger("tab.changed");
             });
         });
         return self;
@@ -218,6 +214,8 @@ $(function () {
 	// Plotter
 	function SensorView (container) {
 		this.totalPoints = 30;
+
+        this.element = container;
 		
 		this.dataset = dataset = [
 			{label: "Сухой &deg;C", data: []},
@@ -230,15 +228,25 @@ $(function () {
 					this.dataset[i].data.push([j, 22]);
 			}
 		}
+       
+        var w = this.element.parent().width() || 100;
+        this.element.css("width", w + "px");
 		
 		this.plot = $.plot(container, this.dataset, {
 			series: {shadowSize: 0},
 			yaxis: {min: -10, max: 125},
-			xaxis: {show: false}
+			xaxis: {show: false, mode: "time"}
 		});
 	}
 	
 	SensorView.prototype = {
+        resize: function () {
+            this.element.css("width", "100%");
+            this.plot.resize();
+            this.plot.setupGrid();
+            this.plot.draw();
+        },
+        
 		update: function (url, onBeforeUpdate, onAfterUpdate) {
 			if ($.isFunction(onBeforeUpdate)) {
 				onBeforeUpdate();
@@ -284,8 +292,11 @@ $(function () {
 	var sensor = new SensorView($("#plot"));
 	sensor.update("sensor");
     
-    // Enables tabs. Refresh tabs.
-    $("#tabs").tabify();
+    $("#tabs").bind("tab.changed", function () {
+        sensor.resize();
+    }).tabify();
+    
+    $(window).bind("resize", function () { sensor.resize(); });
     
     $("#next").click(function () {
         $(this).attr("disabled", "disabled");

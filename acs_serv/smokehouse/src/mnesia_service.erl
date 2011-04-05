@@ -10,7 +10,7 @@
 -include_lib("stdlib/include/qlc.hrl").
 -include("smokehouse.hrl").
 
--export([start/0, stop/0]).
+-export([start/0, stop/0, list/0, add/2, remove/2]).
 
 -export([select/1, first/1]).
 
@@ -20,28 +20,51 @@
 start() ->
     mnesia:create_schema([node()]),
     mnesia:start(),
-    ensure_table(auth, [
-        {type, set},
-        {ram_copies, [node()]},
-        {attributes, record_info(fields, auth)}
-    ]),
-    ensure_table(device, [
-        {type, set},
-        {disc_copies, [node()]},
-        {attributes, record_info(fields, device)}
-    ]),
-    case mnesia:wait_for_tables([auth, device], 1000) of
-        {timeout, _} ->
-            failed;
-        _ ->
-            ok
+	ensure_table(node, [
+		{type, set},
+		{ram_copies, [node()]},
+		{attributes, record_info(fields, node)}
+	]),
+    case mnesia:wait_for_tables([node], 1000) of
+        {timeout, _} -> failed;
+        _ -> ok
     end.
 
-%%
+%% @spec  list () -> [X#node] | {failed, Reason} .
+%% @doc Select all nodes from node table
+list () ->
+	case mnesia:transaction(fun () -> select(qlc:q([X || X <- mnesia:table(node)])) end) of
+		{atomic, Result} -> Result;
+		{aborted, Reason} -> {failed, Reason}
+	end.
+
+%% @spec add (Name, {Address, Port}) -> {failed, Reason} | Result .
+%% @doc Adds record to database
+add (Name, {Address, Port}) ->
+	case mnesia:transaction(fun () ->
+		case first(qlc:q([X || X <- mnesia:table(node)])) of
+			[] -> mnesia:write(#node{name=Name, address=Address, port=Port});
+			_  -> {failed, "Already exists"}
+		end
+	end) of
+		{aborted, Reason} -> {failed, Reason};
+		{atomic, {failed, Reason}} -> {failed, Reason};
+		{atomic, Result} -> Result
+	end.
+
+%% @spec remove(Name, {Address, Port}} -> Result | {failed, Reason} .
+%% @doc Removes record from database.
+remove(_, {_, _}) ->
+	%case mnesia:transaction(fun () -> mnesia:delete({node, #{} }) end) of
+	%		{aborted, Reason} -> {failed, Reason};
+	%	{atomic, Result} -> Result
+	%end.
+	failed.
+
+%% @spec stop () -> ok | failed .
 %% @doc Stop database module
 stop() ->
     mnesia:stop().
-
 
 %%
 %% @doc Helper function
@@ -78,4 +101,3 @@ ensure_table(Table, DoFunc) when is_atom(Table) andalso is_function(DoFunc) ->
             DoFunc(),
             ok
     end.
-
