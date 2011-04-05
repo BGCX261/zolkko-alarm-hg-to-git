@@ -149,14 +149,17 @@ $(function () {
             function (data) {
                 if (data.result) {
                     $("#sensor_stat").empty().append("<img src=\"img/accept.png\" alt=\"accept\" />");
-                } else {
+                    $.jnotify("Host " + $("#sensor_url").val() + " is accessible.");
+                } else {    
                     $("#sensor_stat").empty().append("<img src=\"img/error.png\" alt=\"error\" />");
+                    $.jnotify("Host " + $("#sensor_url").val() + " is unaccessible.");
                 }
             }, "text/json")
             .error(function (error) {
                 if (console && console.log) {
                     console.log(error);
                 }
+                $.jnotify("Faild to test host accessebility", "error");
                 $("#sensor_stat").empty().append("<img src=\"img/error.png\" alt=\"error\" />");
             })
             .complete(function () {                

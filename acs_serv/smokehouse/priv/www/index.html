@@ -4,9 +4,10 @@
 		<title>ACS SimBe</title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 		<link rel="stylesheet" type="text/css" href="main.css" />
+        <link rel="stylesheet" type="text/css" href="jquery.jnotify.css" />
 		<script type="text/javascript" src="js/jquery-1.5.1.min.js"></script>
 		<script type="text/javascript" src="js/jquery.flot.js"></script>
-		<script type="text/javascript" src="js/jquery.jnotify.js"></script>
+		<script type="text/javascript" src="js/jquery.jnotify.min.js"></script>
         <script type="text/javascript" src="js/jquery.timers-1.2.js"></script>
 		<script type="text/javascript" src="js/app.js"></script>
 	</head>
@@ -17,16 +18,15 @@
 			<h1>ООО "Симбирский Бекон"</h1>
 			<h2>АСУ коптильной камеры</h2>
 		</div>
-
         <div class="row">
             <table id="tabs" class="tabsTable">
                 <tbody>
                     <tr>
                         <td>
-                            <div style="display:block" class="simpleTabs" menuFilled>
+                            <div style="display:block" class="simpleTabs">
                                 <ul class="tabs">
-                                    <li id="main" class="first"><p><a class="tabs" href="#">Общее</a></p></li>
-                                    <li id="dev" class="selected last"><p><a class="tabs" href="#">Коптильная камера 1</a></p></li>
+                                    <li id="main" class="selected first"><p><a class="tabs" href="#">Общее</a></p></li>
+                                    <li id="dev" class="last"><p><a class="tabs" href="#">Коптильная камера 1</a></p></li>
                                 </ul>
                             </div>
                         </td>
@@ -49,13 +49,16 @@
                 </div>
                 
                 <div class="cell" style="width:34%" title="Добавить">
-                    <span id="sensor_stat"></span>
-                    <input id="sensor_name" type="text" name="name" placeholder="Название/Расположение" required />
-                    <input id="sensor_url" type="url" name="address" placeholder="http://192.168.1.54:80" required />
-                    <div>
-                        <input id="sensor_test" type="button" value="Тест" />
-                        <input id="sensor_add" type="button" value="Добавить" />
-                    </div>
+                        <div>
+                            <span id="sensor_stat"></span>
+                            <input id="sensor_name" type="text" name="name" placeholder="Название/Расположение" required />
+                            <input id="sensor_url" type="url" name="address" placeholder="http://192.168.1.54:80" required />
+                        </div>
+                       
+                        <div>
+                            <input id="sensor_test" type="button" value="Тест" />
+                            <input id="sensor_add" type="button" value="Добавить" />
+                        </div>
                 </div>
             </div>
         </div>
