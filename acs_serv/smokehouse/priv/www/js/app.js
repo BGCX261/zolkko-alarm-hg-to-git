@@ -139,61 +139,129 @@
     }
 })(jQuery);
 
-$(function () {
-    $(".cell").addbox();
+(function ($) {
+    var _log = [];
     
-    $("#sensor_test").click(function (e) {
+    $.info = function (msg) {
+        var d = new Date();
+        _log.append({"type": "info", "message": msg, "time": d});
+        if (console && console.info) {
+            console.info("[" + d + "] " + msg);
+        }
+        $.jnotify(msg);
+    }
+    
+    $.error = function (msg) {
+        var d = new Date();
+        _log.append({"type": "error", "message": msg, "time": d});
+        if (console && console.log) {
+            cnosole.info("[" + d + "] " + msg);
+        }
+        $.jnotify(msg);
+    }
+    
+    $.replayLog = function (count) {
+        var i = _log.length - ( count || 10 );
+        if (i < 0) {
+            i = 0;
+        }
+        for (; i < _log.length; i++) {
+            if (_log[i].type == "error") {
+                $.jnotify(_log[i].message, "error");
+            } else {
+                $.jnotify(_log[i].message);
+            }
+        }
+    }
+})(jQuery);
+
+$(function () {
+    $(".wnd").addbox();
+   
+    // TODO: jQuery localization
+    $("#node_test").click(function (e) {
+        var oUrl = $("#node_url");
+        var nodeUrl = oUrl.val().trim();
+        if (nodeUrl.length == 0) {
+            $.error("Необходимо заполнить поле адрес.");
+            oUrl.focus();
+            return;
+        }
+        
         var self = $(this);
         self.attr("disabled", "disabled");
-        $.post("sensor_test", {"address": $("#sensor_url").val()},
+        $.post("node_test", {"address": nodeUrl},
             function (data) {
                 if (data.result) {
-                    $("#sensor_stat").empty().append("<img src=\"img/accept.png\" alt=\"accept\" />");
-                    $.jnotify("Host " + $("#sensor_url").val() + " is accessible.");
+                    // TODO: use jQuery tamplate and localization features
+                    $("#node_stat").empty().append("<img src=\"img/accept.png\" alt=\"accept\" />");
+                    $.info("Узел " + nodeUrl + " доступен.");
                 } else {    
-                    $("#sensor_stat").empty().append("<img src=\"img/error.png\" alt=\"error\" />");
-                    $.jnotify("Host " + $("#sensor_url").val() + " is unaccessible.");
+                    $("#node_stat").empty().append("<img src=\"img/error.png\" alt=\"error\" />");
+                    $.error("Узел " + nodeUrl + " не доступен.");
                 }
             }, "text/json")
             .error(function (error) {
                 if (console && console.log) {
                     console.log(error);
                 }
-                $.jnotify("Faild to test host accessebility", "error");
-                $("#sensor_stat").empty().append("<img src=\"img/error.png\" alt=\"error\" />");
+                $.error(error.status + " Ошибка тестирования доступности узла.");
+                $("#node_stat").empty().append("<img src=\"img/error.png\" alt=\"error\" />");
             })
             .complete(function () {                
                 self.attr("disabled", "");
             });
     });
     
-    $("#sensor_add").click(function (e) {
+    $("#node_add").click(function (e) {
+        var oName = $("#node_name");
+        var oUrl = $("#node_url");
+        
+        var nodeName = oName.val().trim();
+        var nodeUrl = oUrl.val().trim();
+        
+        if (nodeName.length == 0) {
+            $.error("Заполните поле \"имя\" добавляемого узла.");
+            $("#node_name").focus();
+            return;
+        }
+        
+        if (nodeUrl.length == 0) {
+            $.jnotify("Заполните поле \"адрес\" добавляемого узла.", "error");
+            $("#node_url").focus();
+            return;
+        }
+        
         var self = $(this);
         self.attr("disabled", "disabled");
-        var postData = {"address": $("#sensor_url").val(), "name": $("#sensor_name").val()};
-        $.post("sensor_add", postData,
+        
+        $.post("node_add", {"address": nodeUrl, "name": nodeName},
             function (data) {
                 if (data.result) {
-                    var tr = $("#sensor_tbl tr:last").after("<tr></tr>");
-                    tr.append($("<td><span id=\"sensor_1_stat\"></span></td>").text($("#sensor_name").val()));
-                    tr.append($("<td></td>").text($("#sensor_url").val()));
+                    var statNode = $("<span></span>");
+                    var tr = $("#node_tbl tr:last").after($("<tr></tr>").append(statNode));
+                    tr.append($("<td></td>").text(nodeName));
+                    tr.append($("<td></td>").text(nodeUrl));
                     tr.append($("<td></td>")
-                        .append($("<input type=\"button\" value=\"Тест\" />").click(function () {
-                            // TODO: test
+                        .append($("<input type=\"button\" value=\"Тест доступности\" />").click(function () {
+                            $.jnotify("Тест доступности узла " + nodeUrl  + ".");
+                            statNode.empty().html("<img src=\"img/error.png\" alt=\"error\" />");
                         }))
                         .append($("<input type=\"button\" value=\"Вкл.\" />").click(function () {
-                            // TODO: open box
+                            var btn = $(this);
+                            $.jnotify("Включение новго узла в список слежения");
                         })));
-                    $("#sensor_name").val("");
-                    $("#sensor_url").val("");
+                    oName.val("");
+                    oUrl.val("");
                 } else {
-                    // TODO: false
+                    $.jnotify("Узел \"" + nodeName + "\" не добавлен в список слежения.<br />" + data.rason, "error");
                 }
             }, "json")
             .error(function (error) {
                 if (console && console.log) {
                     console.log(error);
                 }
+                $.jnotify(error.status + " Ошибка добавления узла \"" + nodeName + "\".", "error");
             })
             .complete(function () {                
                 self.attr("disabled", "");
@@ -217,9 +285,10 @@ $(function () {
 	// Plotter
 	function SensorView (container) {
 		this.totalPoints = 30;
-
+        
         this.element = container;
 		
+        // TODO:
 		this.dataset = dataset = [
 			{label: "Сухой &deg;C", data: []},
 			{label: "Влажный &deg;C", data: []},
@@ -343,7 +412,7 @@ $(function () {
         });
     });
 	
-	$("#sensor_refresh").click(function () {
+	$("#node_refresh").click(function () {
 		var self = $(this);
 		sensor.update("sensor",
 			function () {

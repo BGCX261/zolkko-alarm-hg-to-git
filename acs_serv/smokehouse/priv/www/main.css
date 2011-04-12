@@ -8,6 +8,8 @@ html, body {
 	min-width: 800px;
 }
 
+.wnd { }
+
 .clr { clear: both; font-size:0px; }
 
 #page { height: 100%; }

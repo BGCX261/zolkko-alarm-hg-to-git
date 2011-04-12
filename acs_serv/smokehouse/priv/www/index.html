@@ -4,7 +4,6 @@
 		<title>ACS SimBe</title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 		<link rel="stylesheet" type="text/css" href="main.css" />
-        <link rel="stylesheet" type="text/css" href="jquery.jnotify.css" />
 		<script type="text/javascript" src="js/jquery-1.5.1.min.js"></script>
 		<script type="text/javascript" src="js/jquery.flot.js"></script>
 		<script type="text/javascript" src="js/jquery.jnotify.min.js"></script>
@@ -15,7 +14,7 @@
 	<div id="page">
 		<div id="head">
 			<a href="#" alt="logo" title="goto main"><img alt="HTML Task" src="img/logo.jpg" height="100px" /></a>
-			<h1>ООО "Симбирский Бекон"</h1>
+			<h1>ООО "Волжский Бекон"</h1>
 			<h2>АСУ коптильной камеры</h2>
 		</div>
         <div class="row">
@@ -38,8 +37,8 @@
         
         <div id="main_page" style="display:none">
             <div class="row">
-                <div class="cell" style="width:65%" title="Список коптильных камер">
-                    <table id="sensor_tbl" width="100%">
+                <div class="cell wnd" style="width:65%" title="Список коптильных камер">
+                    <table id="node_tbl" width="100%">
                         <tr>
                             <td><b>Название</b></td>
                             <td><b>Адрес</b></td>
@@ -48,16 +47,16 @@
                     </table>
                 </div>
                 
-                <div class="cell" style="width:34%" title="Добавить">
+                <div class="cell wnd" style="width:34%" title="Добавить">
                         <div>
-                            <span id="sensor_stat"></span>
-                            <input id="sensor_name" type="text" name="name" placeholder="Название/Расположение" required />
-                            <input id="sensor_url" type="url" name="address" placeholder="http://192.168.1.54:80" required />
+                            <span id="node_stat"></span>
+                            <input id="node_name" type="text" name="name" placeholder="Название/Расположение" required />
+                            <input id="node_url" type="url" name="address" placeholder="http://192.168.1.54:80" required />
                         </div>
                        
                         <div>
-                            <input id="sensor_test" type="button" value="Тест" />
-                            <input id="sensor_add" type="button" value="Добавить" />
+                            <input id="node_test" type="button" value="Тест доступности узла" />
+                            <input id="node_add" type="button" value="Добавить" />
                         </div>
                 </div>
             </div>
@@ -65,32 +64,47 @@
         
         <div id="dev_page" style="display:none">
             <div class="row">
-                <div id="c0" class="cell" style="width:60%" title="Показатели датчиков">
+                <div id="c0" class="cell wnd" style="width:60%" title="Показатели датчиков">
                     <div id="plot" style="width:100px;height:330px; min-height:350px;min-width:100px;overflow:hide"></div>
-					<input id="sensor_refresh" type="button" value="Обновить" />
+					<input id="node_refresh" type="button" value="Обновить" />
                 </div>
+                
                 <div id="c1" class="cell" style="width:39%">
-                    <div class="row">
-                        <div id="c2" class="cell" style="width:100%" title="Операция / Статус">
+                        <div id="c2" class="cell wnd" style="width:100%;text-align:left;" title="Текущая операция">
 							<ol id="stat">
 							</ol>
-							
 							<form id="opctrl" action="/opctrl" method="post">
 								<input id="action" type="hidden" value="" />
 								<input id="next" disabled type="button" value="Следующая операция" />
 								<input id="terminate" disabled type="button" value="Прервать программу" />
 							</form>
 						</div>
-                    </div>
-                    <div class="row">
-                        <div id="c3" class="cell" style="width:100%" title="Параметры">
-							<div>Версия психрометрической таблицы: <a id="psy_table_version" href="javascript:void(0)" title="Обновить до последней версии"></a></div>
-						</div>
-                    </div>
+                        
+                        <div id="c3" class="cell wnd" style="width:100%" title="Параметры">                            
+                            <fieldset>
+                                <legend>ТЭН</legend>
+                                <input type="number" min="0" />
+                                <input type="number" min="0" />
+                                <input type="number" min="0" />
+                            </fieldset>
+
+                            <fieldset>
+                                <legend>Психометрическая таблица</legend>
+                                <div>Версия: <span id="psy_table_version"></a></div>
+                            </fieldset>
+		    		    </div>
                 </div>
             </div>
-            <div class="row">
-                <div id="c4" class="cell" style="width:100%" title="Лог"></div>
+            <div class="row" style="text-align:center;width:100%;">
+                <div id="c4" class="cell wnd" style="width:99%" title="Лог">
+                    <table class="log_tbl">
+                        <tr>
+                            <th>Дата/время</th>
+                            <th>Наименование операции</th>
+                            <th>Статус</th>
+                        </tr>
+                    </table>
+                </div>
             </div>
         </div>
 	</div>
