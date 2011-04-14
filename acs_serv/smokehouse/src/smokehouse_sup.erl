@@ -4,7 +4,7 @@
 %% @doc Supervisor for the smokehouse application.
 
 -module(smokehouse_sup).
--author("Mochi Media <dev@mochimedia.com>").
+-author("Alex Anisimov <zolkko@gmail.com>").
 
 -behaviour(supervisor).
 
@@ -23,12 +23,10 @@ start_link() ->
 %% @doc Add processes if necessary.
 upgrade() ->
     {ok, {_, Specs}} = init([]),
-
     Old = sets:from_list(
             [Name || {Name, _, _, _} <- supervisor:which_children(?MODULE)]),
     New = sets:from_list([Name || {Name, _, _, _, _, _} <- Specs]),
     Kill = sets:subtract(Old, New),
-
     sets:fold(fun (Id, ok) ->
                       supervisor:terminate_child(?MODULE, Id),
                       supervisor:delete_child(?MODULE, Id),
@@ -41,11 +39,21 @@ upgrade() ->
 %% @spec init([]) -> SupervisorTree
 %% @doc supervisor callback.
 init([]) ->
+    Udp = udp_specs(smokehouse_ctrl, 8181),
     Web = web_specs(smokehouse_web, 8080),
-    Processes = [Web],
+    Processes = [Web, Udp],
     Strategy = {one_for_one, 10, 10},
-    {ok,
-     {Strategy, lists:flatten(Processes)}}.
+    {ok, {Strategy, lists:flatten(Processes)}}.
+
+%% @todo pass mnesia_service as database service logic
+udp_specs(Mod, Port) ->
+    DbServiceModule = case application:get_env(smokehouse, "db_service_module") of
+        {ok, DbSvcModule} -> DbSvcModule;
+        undefined -> mnesia_service
+    end,
+    {Mod,
+        {Mod, start_link, [[DbServiceModule, Port]]},
+        permanent, 5000, worker, dynamic}.
 
 web_specs(Mod, Port) ->
     WebConfig = [{ip, {0,0,0,0}},
