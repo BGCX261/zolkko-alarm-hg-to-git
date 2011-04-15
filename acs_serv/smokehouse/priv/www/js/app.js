@@ -144,7 +144,7 @@
     
     $.info = function (msg) {
         var d = new Date();
-        _log.append({"type": "info", "message": msg, "time": d});
+        _log.push({"type": "info", "message": msg, "time": d});
         if (console && console.info) {
             console.info("[" + d + "] " + msg);
         }
@@ -153,7 +153,7 @@
     
     $.error = function (msg) {
         var d = new Date();
-        _log.append({"type": "error", "message": msg, "time": d});
+        _log.push({"type": "error", "message": msg, "time": d});
         if (console && console.log) {
             cnosole.info("[" + d + "] " + msg);
         }
@@ -431,6 +431,24 @@ $(function () {
 			$("#psy_table_version").text("Ошибка");
 		});
 	}
+
+    
+    // Loading nodes list
+    $.getJSON("nodes", function (nodes, textStatus, jqXHR) {
+        var node_tbl = $("#node_tbl");
+        if (node_tbl) {
+            $.info("Список коптильных камер загружен.");
+            for (var i = 0; i < nodes.length; i++) {
+                var node = nodes[i];
+                node_tbl.append($("<tr></tr>")
+                    .append($("<td></td>").text(node.name))
+                    .append($("<td></td>").text("udp://" + node.address + ":" + node.port))
+                    .append("<td>выкл</td>"));
+            }
+        } else {
+            $.error("Failed to load nodes list.");
+        }
+    });
     
     // Get status
     $.getJSON("status", function (list, textStatus, jqXHR) {

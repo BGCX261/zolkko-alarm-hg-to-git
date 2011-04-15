@@ -1,6 +1,4 @@
+
 %% sensor hosts
--record(node, {
-	name,
-	address,
-	port
-}).
+-record(node, {name, password, address, port}).
+

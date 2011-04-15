@@ -10,7 +10,7 @@
 -include_lib("stdlib/include/qlc.hrl").
 -include("smokehouse.hrl").
 
--export([start/0, stop/0, list/0, add/2, remove/2]).
+-export([start/0, stop/0, list_nodes/0, add/2, remove/2]).
 
 -export([select/1, first/1]).
 
@@ -20,19 +20,33 @@
 start() ->
     mnesia:create_schema([node()]),
     mnesia:start(),
-	ensure_table(node, [
-		{type, set},
-		{ram_copies, [node()]},
-		{attributes, record_info(fields, node)}
-	]),
+    ensure_table(node, 
+        fun () ->
+            mnesia:create_table(node, [
+                {type, set},
+                {disc_copies, [node()]},
+                {attributes, record_info(fields, node)}
+            ]),
+            mnesia:transaction(
+                fun () ->
+                    mnesia:write(#node{name = <<"node_1">>, password = <<"pass">>, address = {127, 0, 0, 1}, port = 1234}),
+                    mnesia:write(#node{name = <<"node_2">>, password = <<"pass">>, address = {127, 0, 0, 1}, port = 2345}),
+                    mnesia:write(#node{name = <<"node_3">>, password = <<"pass">>, address = {127, 0, 0, 1}, port = 3456})
+                end)
+        end),
+	%ensure_table(node, [
+	%	{type, set},
+	%	{ram_copies, [node()]},
+	%	{attributes, record_info(fields, node)}
+	%]),
     case mnesia:wait_for_tables([node], 1000) of
         {timeout, _} -> failed;
         _ -> ok
     end.
 
-%% @spec  list () -> [X#node] | {failed, Reason} .
+%% @spec  list_nodes() -> [X#node] | {failed, Reason} .
 %% @doc Select all nodes from node table
-list () ->
+list_nodes() ->
 	case mnesia:transaction(fun () -> select(qlc:q([X || X <- mnesia:table(node)])) end) of
 		{atomic, Result} -> Result;
 		{aborted, Reason} -> {failed, Reason}

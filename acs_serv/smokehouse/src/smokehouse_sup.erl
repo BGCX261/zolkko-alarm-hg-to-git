@@ -39,14 +39,13 @@ upgrade() ->
 %% @spec init([]) -> SupervisorTree
 %% @doc supervisor callback.
 init([]) ->
-    Udp = udp_specs(smokehouse_ctrl, 8181),
+    Ctrl = ctrl_specs(smokehouse_ctrl, 8181),
     Web = web_specs(smokehouse_web, 8080),
-    Processes = [Web, Udp],
+    Processes = [Ctrl, Web],
     Strategy = {one_for_one, 10, 10},
     {ok, {Strategy, lists:flatten(Processes)}}.
 
-%% @todo pass mnesia_service as database service logic
-udp_specs(Mod, Port) ->
+ctrl_specs(Mod, Port) ->
     DbServiceModule = case application:get_env(smokehouse, "db_service_module") of
         {ok, DbSvcModule} -> DbSvcModule;
         undefined -> mnesia_service

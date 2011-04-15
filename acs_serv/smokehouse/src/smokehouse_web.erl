@@ -6,7 +6,7 @@
 -module(smokehouse_web).
 -author("Mochi Media <dev@mochimedia.com>").
 
--export([start/1, stop/0, loop/3]).
+-export([start/1, stop/0, loop/2]).
 
 -include("smokehouse.hrl").
 
@@ -16,16 +16,14 @@
 %% External API
 
 start(Options) ->
-    DbService = db_service:start(mnesia_service),
     {DocRoot, Options1} = get_option(docroot, Options),
-    Loop = fun (Req) -> ?MODULE:loop(Req, DocRoot, DbService) end,
+    Loop = fun (Req) -> ?MODULE:loop(Req, DocRoot) end,
     mochiweb_http:start([{name, ?MODULE}, {loop, Loop} | Options1]).
 
 stop() ->
-    db_service:stop(mnesia_service),
     mochiweb_http:stop(?MODULE).
 
-loop(Req, DocRoot, DbService) ->
+loop(Req, DocRoot) ->
     try
         case smokehouse_route:route(Req) of
             {get, "status"} ->
@@ -38,7 +36,7 @@ loop(Req, DocRoot, DbService) ->
 				response_sensor_data(Req);
 			
 			{get, "nodes"} ->
-				response_nodes(Req, DbService);
+				response_nodes(Req);
 			
             {get, Url} ->
                 Req:serve_file(Url, DocRoot);
@@ -60,19 +58,22 @@ loop(Req, DocRoot, DbService) ->
 get_option(Option, Options) ->
     {proplists:get_value(Option, Options), proplists:delete(Option, Options)}.
 
-%% @spec response_nodes(Req, DbService) -> Response .
+%% @spec response_nodes(Req) -> Response .
 %% @doc Returns list of smoke house nodes.
-response_nodes(Req, DbService) ->
-	case db_service:list(DbService) of
+response_nodes(Req) ->
+	case smokehouse_ctrl:list_nodes() of
 		{failed, Reason} -> Req:respond({500, [{"Content-Type", "text/json"} | response_headers()], mochijson2:encode({struct, [{<<"error">>, Reason}]})});
 		List ->
 			JsonData = {array,
 							[{struct,
 									[{<<"name">>, X#node.name},
-									 {<<"address">>, X#node.address},
+									 {<<"address">>, list_to_binary(inet_parse:ntoa(X#node.address))},
 									 {<<"port">>, X#node.port}]}
 								|| X <- List]},
-			Req:ok({"text/json", response_headers(), mochijson2:encode(JsonData)})
+            error_logger:info_msg("Json data = ~p", [JsonData]),
+            Raw = mochijson2:encode(JsonData),
+            error_logger:info_msg("Raw data =~p", [Raw]),
+			Req:ok({"text/json", response_headers(), Raw})
 	end.
 
 %% @spec response_headers() -> [ResponseHeaders::tuple()] .
