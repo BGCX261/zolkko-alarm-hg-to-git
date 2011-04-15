@@ -39,14 +39,18 @@ upgrade() ->
 %% @spec init([]) -> SupervisorTree
 %% @doc supervisor callback.
 init([]) ->
-    Ctrl = ctrl_specs(smokehouse_ctrl, 8181),
-    Web = web_specs(smokehouse_web, 8080),
+    Ctrl = ctrl_specs(smokehouse_ctrl),
+    Web = web_specs(smokehouse_web),
     Processes = [Ctrl, Web],
     Strategy = {one_for_one, 10, 10},
     {ok, {Strategy, lists:flatten(Processes)}}.
 
-ctrl_specs(Mod, Port) ->
-    DbServiceModule = case application:get_env(smokehouse, "db_service_module") of
+ctrl_specs(Mod) ->
+    Port = case application:get_env(smokehouse, ctrl_port) of
+        {ok, CtrlPort} -> CtrlPort;
+        undefined -> 8181
+    end,
+    DbServiceModule = case application:get_env(smokehouse, db_service_module) of
         {ok, DbSvcModule} -> DbSvcModule;
         undefined -> mnesia_service
     end,
@@ -54,7 +58,11 @@ ctrl_specs(Mod, Port) ->
         {Mod, start_link, [[DbServiceModule, Port]]},
         permanent, 5000, worker, dynamic}.
 
-web_specs(Mod, Port) ->
+web_specs(Mod) ->
+    Port = case application:get_env(smokehouse, web_port) of
+        {ok, WebPort} -> WebPort;
+        undefined -> 8080
+    end,
     WebConfig = [{ip, {0,0,0,0}},
                  {port, Port},
                  {docroot, smokehouse_deps:local_path(["priv", "www"])}],
