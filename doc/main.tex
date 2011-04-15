@@ -70,33 +70,55 @@
 
 \renewcommand{\contentsname}{СОДЕРЖАНИЕ}
 
+
 \begin{center}
 \MakeUppercase{ЗАМЕЧАНИЯ РУКОВОДИТЕЛЯ}
 \end{center}
 \newpage
 
+%% Постановка задачи
+\include{task}
+\newpage{}
+
+%% Реферат
+\include{referat}
+\newpage{}
+
+
 %% В ВГТУ по какой-то причине не считаются с существованием ЕСКД
 %\ESKDthisStyle{formI}
 %\setcounter{page}{3}
 \tableofcontents
-\newpage
+\newpage{}
 
 %% Введение
 \include{introduction}
-
-%% Постановка задачи
-\include{task}
 
 %% Обзор САПР
 \include{cad_review}
 
 %% Описываем выбор инструментария
 \include{tools}
-\include{details}
+
+%% Реализация автоматизированной программно-аппаратной системы управления коптильной камерой
+\include{implementation}
+
+%% Адаптивный алгоритм управления температурой
+\include{micro_prog}
+
+%% Разработка сервиса
+\include{acs_serv}
+
+\include{scheme}
+
+%% экономическая часть
 \include{econom}
-%%\section{Разработка программно-аппаратного комплекса}
-%%\include{led_res}
-%%\include{led_pwm}
+
+%% бжд
+\include{bjd}
+
+%% заключение
+\include{finish}
 
 %% Библиография
 \renewcommand{\refname}{СПИСОК ЛИТЕРАТУРЫ}
@@ -119,5 +141,8 @@ culture and control creativity'', ''Rebuilding Free Culture: One Idea'', KF2979.
 \bibitem{avrspi} Atmel corp., ''AVR1309: Using the XMEGA SPI'', Rev. 8057A-AVR-02/08, с. 6
 \bibitem{enc28j60} Microchip inc., ''ENC28J60 Data Sheet. Stand-Alone Ethernet Controller with SPI Interface'', с. 93
 \end{thebibliography}
+
+\include{additions}
+
 \end{document}
 
