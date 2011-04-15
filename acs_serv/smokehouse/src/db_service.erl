@@ -6,7 +6,7 @@
 -module(db_service).
 
 -export([behaviour_info/1]).
--export([start/1, stop/1, add/3, remove/3, list_nodes/1]).
+-export([start/1, stop/1, add_node/5, remove_node/2, list_nodes/1]).
 
 %% @spec behaviour_info(callbacks) -> InterfaceDescriptor .
 %% @doc Declare behaviour interface
@@ -14,8 +14,8 @@ behaviour_info(callbacks) ->
     [{start, 0},
      {stop, 0},
 	 {list_nodes, 0},
-	 {add, 2},
-	 {remove, 2}];
+	 {add_node, 4},
+	 {remove_node, 1}];
 
 behaviour_info(_) ->
     undefined.
@@ -37,11 +37,13 @@ stop (DbModule) ->
 list_nodes(DbModule) ->
 	DbModule:list_nodes().
 
-%% @spec add(DbModule, Name, {Address, Port})
-%% @doc Starting hosts
-add(DbModule, Name, {Address, Port}) ->
-	DbModule:add(Name, {Address, Port}).
+%% @spec add(DbModule, Name, Password, Address, Port) -> {ok, Node:record()} | {failed, Reason} .
+%% @doc Add new smokehouse node.
+add_node(DbModule, Name, Password, Address, Port) ->
+	DbModule:add_node(Name, Password, Address, Port).
 
-%% 
-remove(DbModule, Name, {Address, Port}) ->
-	DbModule:remove(Name, {Address, Port}).
+%% @spec remove_node(DbModule, NodeName) -> {ok, Node:node()} | {failed, Reason} .
+%% @doc Remove smokehouse node form watch list.
+remove_node(DbModule, NodeName) ->
+	DbModule:remove_node(NodeName).
+

@@ -10,7 +10,7 @@
 -include_lib("stdlib/include/qlc.hrl").
 -include("smokehouse.hrl").
 
--export([start/0, stop/0, list_nodes/0, add/2, remove/2]).
+-export([start/0, stop/0, list_nodes/0, add_node/4, remove_node/1]).
 
 -export([select/1, first/1]).
 
@@ -52,13 +52,18 @@ list_nodes() ->
 		{aborted, Reason} -> {failed, Reason}
 	end.
 
-%% @spec add (Name, {Address, Port}) -> {failed, Reason} | Result .
+%% @spec add_node(Name, Password, Address, Port) -> {failed, Reason} | {ok, Result:record()}.
 %% @doc Adds record to database
-add (Name, {Address, Port}) ->
+add_node(Name, Password, Address, Port) ->
 	case mnesia:transaction(fun () ->
-		case first(qlc:q([X || X <- mnesia:table(node)])) of
-			[] -> mnesia:write(#node{name=Name, address=Address, port=Port});
-			_  -> {failed, "Already exists"}
+		case first(qlc:q([X || X <- mnesia:table(node), X#node.name == Name])) of
+			[] ->
+                Node = #node{name=Name, password=Password, address=Address, port=Port},
+                mnesia:write(Node),
+                {ok, Node};
+            
+			_  ->
+                {failed, "Node already exists"}
 		end
 	end) of
 		{aborted, Reason} -> {failed, Reason};
@@ -66,14 +71,18 @@ add (Name, {Address, Port}) ->
 		{atomic, Result} -> Result
 	end.
 
-%% @spec remove(Name, {Address, Port}} -> Result | {failed, Reason} .
-%% @doc Removes record from database.
-remove(_, {_, _}) ->
-	%case mnesia:transaction(fun () -> mnesia:delete({node, #{} }) end) of
-	%		{aborted, Reason} -> {failed, Reason};
-	%	{atomic, Result} -> Result
-	%end.
-	failed.
+%% @spec remove_node(Name) -> {ok, Node:node()} | {failed, Reason} .
+%% @doc Removes smokehouse node from database.
+remove_node(NodeName) ->
+    case mnesia:transaction(fun () ->
+        case first(qlc:q([X || X <- mnesia:table(node), X#node.name == NodeName])) of
+            Node when is_record(Node, node) -> Node;
+            _ -> {failed, "Failed to select node"}
+        end
+    end) of
+        {aborted, Reason} -> {failed, Reason};
+        {atomic, Node} -> {ok, Node}
+    end.
 
 %% @spec stop () -> ok | failed .
 %% @doc Stop database module

@@ -8,7 +8,7 @@
 -behaviour(gen_server).
 
 %% External API
--export([list_nodes/0]).
+-export([list_nodes/0, add_node/4, remove_node/1]).
 
 %% gen_server behavour
 -export([start/1, start_link/1]).
@@ -33,6 +33,16 @@
 %% @doc List watched nodes.
 list_nodes() ->
     gen_server:call(?SERVER, list_nodes).
+
+%% @spec add_node(Name, Password, Address, Port) ->
+%% @doc Add smokehouse node.
+add_node(Name, Password, Address, Port) ->
+    gen_server:call(?SERVER, {add_node, Name, Password, Address, Port}).
+
+%% @spec remove_node(Name) -> {ok, Node:record} | {failed, Reason}.
+%% @doc Remove smokehouse node.
+remove_node(Name) ->
+    gen_server:call(?SERVER, {remove_node, Name}).
 
 %%
 %% Behaviour implementation
@@ -71,9 +81,23 @@ handle_cast(_Cast, _State) ->
 %% @doc handle sync calls
 handle_call(Request, _Caller, #ctrl_svc{socket = _Socket, db = DbService} = State) ->
     case Request of
-        list_nodes -> {reply, list_nodes_impl(DbService), State};
-        [] -> {stop, "Unable to handle empty messages", State};
-        _ -> {noreply, State}
+        list_nodes ->
+            error_logger:info_msg("list_nodes"),
+            {reply, list_nodes_impl(DbService), State};
+        
+        {add_node, {Name, Password, Address, Port}} ->
+            error_logger:info_msg("add_node"),
+            {reply, add_node_impl(DbService, Name, Password, Address, Port), State};
+        
+        {remove_node, NodeName} ->
+            error_logger:info_msg("remove_node"),
+            {reply, remove_node_impl(DbService, NodeName), State};
+        
+        [] ->
+            {stop, "Unable to handle empty messages", State};
+        
+        _ ->
+            {noreply, State}
     end.
 
 %% @spec handle_info(Udp, Socket) -> {noreply, Socket} | {stop, Reason, NewSocket}.
@@ -103,4 +127,14 @@ code_change(_OldVersion, Library, _Extra) ->
 %% @doc List nodes registered in the system.
 list_nodes_impl(DbService) ->
     db_service:list_nodes(DbService).
+
+%% @spec add_node_impl(DbService, Name, Password, Address, Port) -> {ok, Node:node()} | {failed, Reason} .
+%% @doc Add new smokehouse node.
+add_node_impl(DbService, NodeName, Password, Address, Port) ->
+    db_service:add_node(DbService, NodeName, Password, Address, Port).
+
+%% @spec remove_node(DbService, NodeName) -> {ok, Node:node()} | {failed, Reason} .
+%% @doc Remove smokehouse node from watch.
+remove_node_impl(DbService, NodeName) ->
+    db_service:remove_node(DbService, NodeName).
 

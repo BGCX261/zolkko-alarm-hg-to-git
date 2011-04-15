@@ -51,7 +51,7 @@ ctrl_specs(Mod) ->
         undefined -> 8181
     end,
     DbServiceModule = case application:get_env(smokehouse, db_service_module) of
-        {ok, DbSvcModule} -> DbSvcModule;
+        {ok, DbSvcModule} -> list_to_atom(DbSvcModule);
         undefined -> mnesia_service
     end,
     {Mod,
