@@ -20,12 +20,13 @@
 start() ->
     mnesia:create_schema([node()]),
     mnesia:start(),
-    ensure_table(node, 
+    ensure_table('node', 
         fun () ->
-            mnesia:create_table(node, [
+            mnesia:create_table('node', [
                 {type, set},
                 {disc_copies, [node()]},
-                {attributes, record_info(fields, node)}
+                {ram_copies, [node()]},
+                {attributes, record_info(fields, 'node')}
             ]),
             mnesia:transaction(
                 fun () ->
@@ -39,7 +40,7 @@ start() ->
 	%	{ram_copies, [node()]},
 	%	{attributes, record_info(fields, node)}
 	%]),
-    case mnesia:wait_for_tables([node], 1000) of
+    case mnesia:wait_for_tables(['node'], 1000) of
         {timeout, _} -> failed;
         _ -> ok
     end.
