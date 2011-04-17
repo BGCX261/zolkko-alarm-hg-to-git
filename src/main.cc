@@ -5,18 +5,10 @@
 #include <util/delay.h>
 #include "ili9320.h"
 #include "sound.h"
+#include "enc28j60.h"
 
 #define DACW(DATA) while (!(DACB.STATUS & DAC_CH0DRE_bm)) ; DACB.CH0DATA = DATA;
 
-/*
-#define sound_data_length 4
-const prog_uint8_t sound_data[] PROGMEM = {
-    0x05,
-    0xff,
-    0x05,
-    0xff
-};
-*/
 
 int main(void)
 {
@@ -54,7 +46,7 @@ int main(void)
             display.chip_deselect();
         }
     }
-    //
+    
     for (uint16_t x = 0; x < 32; x++) {
         for (uint16_t y = 0; y < 5; y++) {
             uint16_t x_tmp = x * 10;
