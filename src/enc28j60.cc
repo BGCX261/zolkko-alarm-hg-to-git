@@ -339,7 +339,7 @@ uint16_t enc28j60::phyReadH(uint8_t address)
 /**
  *
  */
-void enc28j60::packetSend(uint16_t len, uint8_t* packet)
+void enc28j60::send_packet(uint16_t len, uint8_t* packet)
 {
     // Check no transmit in progress
     while (this->readOp(ENC28J60_READ_CTRL_REG, ECON1) & ECON1_TXRTS) {

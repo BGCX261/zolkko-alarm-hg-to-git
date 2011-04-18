@@ -4,6 +4,7 @@
 
 #include <inttypes.h>
 #include "spi.h"
+#include "iface.h"
 
 
 // ENC28J60 Control Registers
@@ -265,7 +266,8 @@
 #define MAX_FRAMELEN    1500
 
 
-class enc28j60 {
+class enc28j60 : public Iface
+{
     private:
         Spi * _spi;
         
@@ -317,7 +319,7 @@ class enc28j60 {
         
         void clkout(uint8_t clk);
         
-        void packetSend(uint16_t len, uint8_t* packet);
+        virtual void send_packet(uint16_t len, uint8_t* packet);
         
         uint16_t packetReceive(uint16_t maxlen, uint8_t* packet);
         
