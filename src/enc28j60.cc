@@ -58,7 +58,7 @@ void enc28j60::init(void)
 {
     // At this point Spi module have to be initialized
     
-    this->soft_reset();
+    // this->soft_reset();
     
 	// Do bank 0 stuff
 	// initialize receive buffer

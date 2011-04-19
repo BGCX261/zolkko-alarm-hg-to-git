@@ -52,7 +52,7 @@ class Spi {
                 SPI_PRESCALER_DIV4_gc |
                 SPI_DORD_bm   |
                 SPI_MODE_0_gc |
-                // SPI_CLK2X_bm  |
+                SPI_CLK2X_bm  |
                 SPI_MASTER_bm ;
         }
         
