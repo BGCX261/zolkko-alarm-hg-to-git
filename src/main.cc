@@ -4,14 +4,67 @@
 #include <util/delay_basic.h>
 #include <util/delay.h>
 #include "ili9320.h"
-#include "sound.h"
+// L: #include "sound.h"
 #include "enc28j60.h"
+#include "spi.h"
 
 #define DACW(DATA) while (!(DACB.STATUS & DAC_CH0DRE_bm)) ; DACB.CH0DATA = DATA;
 
+/*
+ * Pure virtual function error handler
+ * TODO: reset microcontroller
+ */
+extern "C" void __cxa_pure_virtual()
+{
+    while (1) ;
+}
+
+static ether_addr_t device_mac = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+static ip_addr_t device_ip = {0x00, 0x00, 0x00, 0x00};
 
 int main(void)
 {
+    // Debug pin direction
+    PORTD.DIRSET = _BV(6);
+    PORTD.DIRSET = _BV(5);
+
+    // TODO: increase controller speed upto 12 MHz
+    // TODO: change MISO / MOSI
+    
+    // Initialize SPI
+    Spi spi(&SPIE,              // Spi module
+            SPI_PIN(PORTE, 5),  // MOSI
+            SPI_PIN(PORTE, 6),  // MISO
+            SPI_PIN(PORTE, 7),  // Clock
+            SPI_PIN(PORTE, 4)); // Chip Select
+    
+    // Initialize enc28j60 interface
+    enc28j60 iface(spi, &device_mac, &device_ip);
+    iface.init();
+    _delay_ms(5);
+
+    uint8_t v = iface.test();
+    if (v == 0b00000010 ||
+        v == 0b00000100 ||
+        v == 0b00000101 ||
+        v == 0b00000110 ||
+        v == 0b00100000 ||
+        v == 0b01000000 ||
+        v == 0b01010000 ||
+        v == 0b01100000)
+    {
+        PORTD.OUTSET = _BV(5);
+    } else if (v == 0) {
+        PORTD.OUTSET = _BV(6);
+    } else {
+        PORTD.OUTSET = _BV(6);
+        PORTD.OUTSET = _BV(5);
+    }
+    
+    // Setup debug pin
+    
+    /* L:
     PORTE.DIRSET = _BV(1);
     PORTE.OUTCLR = _BV(1);
     
@@ -34,6 +87,7 @@ int main(void)
             display.chip_deselect();
         }
     }
+    */
     
     /*
     for (uint16_t x = 0; x < 32; x++) {
@@ -59,17 +113,22 @@ int main(void)
     }
     */
     
-    PORTE.OUTTGL  = _BV(1);
+    //L: PORTE.OUTTGL  = _BV(1);
+    
     // Enable DAC
     
     // PORTB.DIRSET = _BV(2);
     // PORTB.OUTSET = _BV(2);
     
+    /* L:
     DACB.EVCTRL = 0x00;
     DACB.TIMCTRL = 0x00;
+     */
+    
     // DACB.GAINCAL = 0x00;
     // DACB.OFFSETCAL = 0x00;
     
+    /* L:
     DACB.CTRLC = DAC_REFSEL_INT1V_gc;
     DACB.CTRLB = DAC_CHSEL_SINGLE_gc;
     DACB.CTRLA = DAC_CH0EN_bm | DAC_ENABLE_bm;
@@ -82,7 +141,7 @@ int main(void)
             DACW(byte);
             _delay_us(100);
         }
-    }
+    }*/
     
     while (true) {
         // Do nothing

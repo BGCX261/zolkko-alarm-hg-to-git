@@ -269,65 +269,76 @@
 class enc28j60 : public Iface
 {
     private:
-        Spi * _spi;
+        Spi& _spi;
         
         uint8_t bank;
         
         uint16_t nextPacketPtr;
         
-        void delayUs(uint16_t us);
+        void delay_us(uint16_t us);
         
-        void delayMs(uint16_t ms);
+        void delay_ms(uint16_t ms);
         
         /**
          * Performs soft reset.
          * The r(ESTAT) & ESTAT_CLKRDY does not work.
          * See Rev. B4 Silicon Errata point.
          */
-        inline void softReset(void)
+        inline void soft_reset(void)
         {
-            this->writeOp(ENC28J60_SOFT_RESET, 0, ENC28J60_SOFT_RESET);
-            this->delayMs(50);
+            this->write_op(ENC28J60_SOFT_RESET, 0, ENC28J60_SOFT_RESET);
+            this->delay_ms(50);
         }
-
-        void initialize_io(void);
-        
-        void initialize_spi(void);
         
     public:
-        enc28j60(const Spi * spi);
         
-        void initialize(const uint8_t macaddr[6]);
+        enc28j60(Spi& spi, ether_addr_t * macaddr, ip_addr_t * ipaddr) :
+            Iface(macaddr, ipaddr),
+            _spi(spi)
+        {
+        }
         
-        void writeOp(uint8_t op, uint8_t address, uint8_t data);
+        Spi& get_spi(void)
+        {
+            return _spi;
+        }
         
-        uint8_t readOp(uint8_t op, uint8_t address);
+        virtual void init(void);
         
-        void readBuffer(uint16_t len, uint8_t* data);
+        void write_op(uint8_t op, uint8_t address, uint8_t data);
         
-        void writeBuffer(uint16_t len, uint8_t* data);
+        uint8_t read_op(uint8_t op, uint8_t address);
         
-        void setBank(uint8_t address);
+        void read_buffer(uint16_t len, uint8_t* data);
+        
+        void write_buffer(uint16_t len, uint8_t* data);
+        
+        void set_bank(uint8_t address);
         
         uint8_t read(uint8_t address);
         
         void write(uint8_t address, uint8_t data);
         
-        uint16_t phyReadH(uint8_t address);
+        uint16_t phy_read_h(uint8_t address);
         
-        void phyWrite(uint8_t address, uint16_t data);
+        void phy_write(uint8_t address, uint16_t data);
         
         void clkout(uint8_t clk);
         
-        virtual void send_packet(uint16_t len, uint8_t* packet);
+        virtual void send_packet(uint16_t len, uint8_t * packet);
         
-        uint16_t packetReceive(uint16_t maxlen, uint8_t* packet);
+        uint16_t receive_packet(uint16_t maxlen, uint8_t* packet);
         
         uint8_t getrev(void);
         
-        uint8_t hasRxPkt(void);
+        uint8_t has_rx_pkt(void);
         
         uint8_t linkup(void);
+
+        uint8_t test(void)
+        {
+            return this->read(EREVID);
+        }
 };
 
 #endif

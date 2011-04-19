@@ -4,30 +4,26 @@
 #include "udp_service.h"
 
 
-Udp::Udp(void)
-{
-}
-
 /**
  * Format ethernet frame and populate destination mac address
  */
-void Udp::make_eth(uint8_t * buf, const mac_addr_t dest_addr)
+void UdpService::make_eth(uint8_t * buf, const ether_addr_t * dst_addr)
 {
-    const mac_addr_t src_addr = this->_iface->get_mac_addr();
+    ether_addr_t * src_addr = (ether_addr_t *) this->_iface->get_mac_addr();
     
-    memcpy(&buf[ETH_DST_MAC], dest_addr, IF_MAC_ADDR_LEN);
-    memcpy(&buf[ETH_SRC_MAC], src_addr, IF_MAC_ADDR_LEN);
+    memcpy(&buf[ETH_DST_MAC], dst_addr, IF_ETHER_ADDR_LEN);
+    memcpy(&buf[ETH_SRC_MAC], src_addr, IF_ETHER_ADDR_LEN);
 }
 
 /**
  * Format IP packet
  */
-void Udp::make_ip(uint8_t * buf, const ip_addr_t dest_addr)
+void UdpService::make_ip(uint8_t * buf, const ip_addr_t * dst_addr)
 {
-    const ip_addr_t src_addr = this->_iface->get_ip();
+    ip_addr_t * src_addr = (ip_addr_t *) this->_iface->get_ip_addr();
     
-    memcpy(&buf[IP_DST_P], dest_addr, IF_IP_ADDR_LEN);
-    memcpy(&buf[IP_SRC_P], source_ip, IF_IP_ADDR_LEN);
+    memcpy(&buf[IP_DST_P], dst_addr, IF_IP_ADDR_LEN);
+    memcpy(&buf[IP_SRC_P], src_addr, IF_IP_ADDR_LEN);
     
     // Clear the 2 byte checksum
     buf[IP_CHECKSUM_P] = 0;
@@ -38,12 +34,12 @@ void Udp::make_ip(uint8_t * buf, const ip_addr_t dest_addr)
     buf[IP_TTL_P] = 64; // ttl
     
     // calculate the checksum:
-    uint16_t ck = Udp::checksum(&buf[IP_P], IP_HEADER_LEN, 0);
+    uint16_t ck = UdpService::checksum(&buf[IP_P], IP_HEADER_LEN, 0);
     buf[IP_CHECKSUM_P] = ck >> 8;
     buf[IP_CHECKSUM_P + 1] = ck & 0xff;
 }
 
-uint8_t Udp::is_arp_and_myip(uint8_t * buf, uint8_t len)
+uint8_t UdpService::is_arp_and_myip(uint8_t * buf, uint8_t len)
 {
     if (len < 41) {
         return 0;
@@ -55,11 +51,11 @@ uint8_t Udp::is_arp_and_myip(uint8_t * buf, uint8_t len)
         return 0;
     }
     
-    ip_addr_t src_addr = this->_iface->get_ip_addr();
+    ip_addr_t * src_addr = (ip_addr_t *) this->_iface->get_ip_addr();
     
     uint8_t i = 0;
     while (i < IF_IP_ADDR_LEN) {
-        if (buf[ETH_ARP_DST_IP_P + i] != src_addr[i]) return 0;
+        if (buf[ETH_ARP_DST_IP_P + i] != (*src_addr)[i]) return 0;
         i++;
     }
     
@@ -70,7 +66,7 @@ uint8_t Udp::is_arp_and_myip(uint8_t * buf, uint8_t len)
  * First verify that buf is an ip packet
  * Then compare packet IP address
  */
-uint8_t Udp::is_ip_and_myip(uint8_t * buf, uint8_t len)
+uint8_t UdpService::is_ip_and_myip(uint8_t * buf, uint8_t len)
 {
     //eth + ip + udp header is 42
     if (len < 42) {
@@ -83,9 +79,9 @@ uint8_t Udp::is_ip_and_myip(uint8_t * buf, uint8_t len)
     
     uint8_t i = 0;
     
-    ip_addr_t src_addr = this->_iface->get_ip_addr();
+    ip_addr_t * src_addr = (ip_addr_t *) this->_iface->get_ip_addr();
     while (i < IF_IP_ADDR_LEN) {
-        if (buf[IP_DST_P + i] != src_addr[i]) {
+        if (buf[IP_DST_P + i] != (*src_addr)[i]) {
             return 0;
         }
         i++;
@@ -94,22 +90,23 @@ uint8_t Udp::is_ip_and_myip(uint8_t * buf, uint8_t len)
     return 1;
 }
 
-void Udp::arp_answer_from_request(uint8_t * buf, uint8_t len)
+void UdpService::arp_answer_from_request(uint8_t * buf, uint8_t len)
 {
-    this->make_eth(buf);
+    uint8_t * addr_ptr = (uint8_t *) &buf[ETH_SRC_MAC];
+    this->make_eth(buf, (ether_addr_t *) &addr_ptr);
     
     buf[ETH_ARP_OPCODE_H_P] = ETH_ARP_OPCODE_REPLY_H_V;
     buf[ETH_ARP_OPCODE_L_P] = ETH_ARP_OPCODE_REPLY_L_V;
     
     // fill the mac addresses:
-    mac_addr_t src_mac = this->_iface->get_mac_addr();
+    ether_addr_t * src_mac = (ether_addr_t *) this->_iface->get_mac_addr();
     
-    memcpy(&buf[ETH_ARP_DST_MAC_P], &buf[ETH_ARP_SRC_MAC_P], IF_MAC_ADDR_LEN);
-    memcpy(&buf[ETH_ARP_SRC_MAC_P], src_mac, IF_MAC_ADDR_LEN);
+    memcpy(&buf[ETH_ARP_DST_MAC_P], &buf[ETH_ARP_SRC_MAC_P], IF_ETHER_ADDR_LEN);
+    memcpy(&buf[ETH_ARP_SRC_MAC_P], src_mac, IF_ETHER_ADDR_LEN);
     
-    ip_addr_t src_ip = this->_iface->get_ip_addr();
+    ip_addr_t * src_ip = (ip_addr_t *) this->_iface->get_ip_addr();
 
-    memcpy(&buf[ETH_ARP_DST_IP_P], &buf[ETH_AR_SRC_IP_P], IF_IP_ADDR_LEN);
+    memcpy(&buf[ETH_ARP_DST_IP_P], &buf[ETH_ARP_SRC_IP_P], IF_IP_ADDR_LEN);
     memcpy(&buf[ETH_ARP_SRC_IP_P], src_ip, IF_IP_ADDR_LEN);
     
     // eth + arp is 42 bytes:
@@ -119,10 +116,13 @@ void Udp::arp_answer_from_request(uint8_t * buf, uint8_t len)
 /**
  * Echo (ICMP) replay from request (buf)
  */
-void Udp::echo_reply_from_request(uint8_t * buf, uint8_t len)
+void UdpService::echo_reply_from_request(uint8_t * buf, uint8_t len)
 {
-    this->make_eth(buf);
-    this->make_ip(buf);
+    uint8_t * mac_ptr = (uint8_t *) &buf[ETH_SRC_MAC];
+    this->make_eth(buf, (ether_addr_t *)&mac_ptr);
+    
+    uint8_t * ip_ptr = (uint8_t *) &buf[IP_SRC_P];
+    this->make_ip(buf, (ip_addr_t *)&ip_ptr);
     
     buf[ICMP_TYPE_P] = ICMP_TYPE_ECHOREPLY_V;
     
@@ -142,11 +142,12 @@ void Udp::echo_reply_from_request(uint8_t * buf, uint8_t len)
  * port - source/sender port (our port),
  *        destination port is taken fom original packet.
  */
-void Udp::reply_from_request(uint8_t * buf, char * data, uint8_t datalen, uint16_t port)
+void UdpService::reply_from_request(uint8_t * buf, char * data, uint8_t datalen, uint16_t port)
 {
     uint8_t i = 0;
     
-    this->make_eth(buf);
+    uint8_t * mac_ptr = (uint8_t *) &buf[ETH_SRC_MAC];
+    this->make_eth(buf, (ether_addr_t *) &mac_ptr);
     
     if (datalen > 220) {
         datalen = 220;
@@ -156,7 +157,8 @@ void Udp::reply_from_request(uint8_t * buf, char * data, uint8_t datalen, uint16
     buf[IP_TOTLEN_H_P] = 0;
     buf[IP_TOTLEN_L_P] = IP_HEADER_LEN + UDP_HEADER_LEN + datalen;
     
-    this->make_ip(buf);
+    uint8_t * ip_ptr = (uint8_t *) &buf[IP_SRC_P];
+    this->make_ip(buf, (ip_addr_t *) &ip_ptr);
     
     // Sent to port of sender and use "port" as own source:
     buf[UDP_DST_PORT_H_P] = buf[UDP_SRC_PORT_H_P];
@@ -181,18 +183,18 @@ void Udp::reply_from_request(uint8_t * buf, char * data, uint8_t datalen, uint16
     }
     
     // calculate IP checksum
-    uint16_t ck = Udp::checksum(&buf[IP_SRC_P], 16 + datalen, 1);
+    uint16_t ck = UdpService::checksum(&buf[IP_SRC_P], 16 + datalen, 1);
     buf[UDP_CHECKSUM_H_P] = ck >> 8;
     buf[UDP_CHECKSUM_L_P] = ck & 0xff;
     
-    this->_iface.packet_send(UDP_HEADER_LEN + IP_HEADER_LEN + ETH_HEADER_LEN + datalen, buf);
+    this->_iface->send_packet(UDP_HEADER_LEN + IP_HEADER_LEN + ETH_HEADER_LEN + datalen, buf);
 }
 
 /**
  * Calculate checksum
  * len - proto data length + proto header len
  */
-static uint16_t Udp::checksum(uint8_t * buf, uint16_t len, uint8_t type)
+uint16_t UdpService::checksum(uint8_t * buf, uint16_t len, uint8_t type)
 {
     uint32_t sum = 0;
     

@@ -8,21 +8,15 @@
 #include "enc28j60.h"
 
 
-enc28j60::enc28j60(Spi * spi)
+void enc28j60::delay_us(uint16_t count)
 {
-    this->_spi = spi;
-}
-
-void enc28j60::delayUs(uint16_t count)
-{
+    delay_us(count);
 }
 
 /**
  * Delay at least count miliseconds
- *
- * TODO: extract into external library
  */
-void enc28j60::delayMs(uint16_t count)
+void enc28j60::delay_ms(uint16_t count)
 {
     uint32_t c = 0;
     
@@ -57,54 +51,14 @@ void enc28j60::delayMs(uint16_t count)
     }
 }
 
-void enc28j60::initialize_io(void)
-{
-    // Initialize IO Ports
-}
-
-/**
- * Initialize SPI interface
- * master mode and Fosc/2 clock:
- */
-void enc28j60::initialize_spi(void)
-{
-    // this->_spi
-    SPCR  = (1 << SPE) | ( 1 << MSTR);
-    SPSR |= (1 << SPI2X);
-}
-
 /**
  * Initialize enc28j60 with mac address macaddr
  */
-void enc28j60::initialize(const uint8_t macaddr[6])
+void enc28j60::init(void)
 {
-    /*
-    // initialize I/O
-    // ss as output:
-	pinMode(ENC28J60_CONTROL_CS, OUTPUT);
-	CSPASSIVE; // ss=0
-    	
-	pinMode(SPI_MOSI, OUTPUT);
-	
-	pinMode(SPI_SCK, OUTPUT);
-	
-	pinMode(SPI_MISO, INPUT);
-	*/
-	
-	digitalWrite(SPI_MOSI, LOW);
-	
-	digitalWrite(SPI_SCK, LOW);
-	
-	/*DDRB  |= 1<<PB3 | 1<<PB5; // mosi, sck output
-	cbi(DDRB,PINB4); // MISO is input
-        //
-        cbi(PORTB,PB3); // MOSI low
-        cbi(PORTB,PB5); // SCK low
-  */
+    // At this point Spi module have to be initialized
     
-    this->initialize_spi();
-    
-    this->softReset();
+    this->soft_reset();
     
 	// Do bank 0 stuff
 	// initialize receive buffer
@@ -156,7 +110,7 @@ void enc28j60::initialize(const uint8_t macaddr[6])
 	this->write(MACON2, 0x00);
     
 	// enable automatic padding to 60bytes and CRC operations
-	this->writeOp(ENC28J60_BIT_FIELD_SET, MACON3, MACON3_PADCFG0 | MACON3_TXCRCEN | MACON3_FRMLNEN);
+	this->write_op(ENC28J60_BIT_FIELD_SET, MACON3, MACON3_PADCFG0 | MACON3_TXCRCEN | MACON3_FRMLNEN);
     
 	// set inter-frame gap (non-back-to-back)
 	this->write(MAIPGL, 0x12);
@@ -172,118 +126,118 @@ void enc28j60::initialize(const uint8_t macaddr[6])
     
     // write mac address
     // mac address is byte-backward
-    this->write(MAADR5, macaddr[0]);
-    this->write(MAADR4, macaddr[1]);
-    this->write(MAADR3, macaddr[2]);
-    this->write(MAADR2, macaddr[3]);
-    this->write(MAADR1, macaddr[4]);
-    this->write(MAADR0, macaddr[5]);
+    this->write(MAADR5, _macaddr[0]);
+    this->write(MAADR4, _macaddr[1]);
+    this->write(MAADR3, _macaddr[2]);
+    this->write(MAADR2, _macaddr[3]);
+    this->write(MAADR1, _macaddr[4]);
+    this->write(MAADR0, _macaddr[5]);
     
 	// no loopback of transmitted frames
-	this->phyWrite(PHCON2, PHCON2_HDLDIS);
+	this->phy_write(PHCON2, PHCON2_HDLDIS);
     
 	// switch to bank 0
-    this->setBank(ECON1);
+    this->set_bank(ECON1);
     
 	// enable interrutps
-    this->writeOp(ENC28J60_BIT_FIELD_SET, EIE, EIE_INTIE | EIE_PKTIE);
+    this->write_op(ENC28J60_BIT_FIELD_SET, EIE, EIE_INTIE | EIE_PKTIE);
     
 	// enable packet reception
-    this->writeOp(ENC28J60_BIT_FIELD_SET, ECON1, ECON1_RXEN);
+    this->write_op(ENC28J60_BIT_FIELD_SET, ECON1, ECON1_RXEN);
 }
 
 /**
  *
  */
-void enc28j60::writeOp(uint8_t op, uint8_t address, uint8_t data)
+void enc28j60::write_op(uint8_t op, uint8_t address, uint8_t data)
 {
-    this->_spi->select();
+    _spi.select();
     
     // issue write command
-    this->_spi->write(op | (address & ADDR_MASK));
-    this->_spi->wait();
+    _spi.write(op | (address & ADDR_MASK));
+    _spi.wait();
     
     // write data
-    this->_spi->write(data);
-    this->_spi->wait();
+    _spi.write(data);
+    _spi.wait();
     
-    this->_spi->deselect();
+    _spi.deselect();
 }
 
 /**
  *
  */
-uint8_t enc28j60::readOp(uint8_t op, uint8_t address)
+uint8_t enc28j60::read_op(uint8_t op, uint8_t address)
 {
-    this->_spi->select();
+    _spi.select();
 
     // issue read command
-    this->_spi->write(op | (address & ADDR_MASK));
-    this->_spi->wait();
+    _spi.write(op | (address & ADDR_MASK));
+    _spi.wait();
     
     // read data
-    this->_spi->write(0x00);
-    this->_spi->wait();
+    _spi.write(0x00);
+    _spi.wait();
     
     // do dummy read if needed (for mac and mii, see datasheet page 29)
     if (address & 0x80) {
-        this->_spi->write(0x00);
-        this->_spi->wait();
+        _spi.write(0x00);
+        _spi.wait();
     }
     
-    this->_spi->deselect();
-
-    return this->_spi->read();
+    _spi.deselect();
+    
+    return _spi.read();
 }
 
 /**
  *
  */
-void enc28j60::readBuffer(uint16_t len, uint8_t* data)
+void enc28j60::read_buffer(uint16_t len, uint8_t* data)
 {
-    this->_spi->select();
+    _spi.select();
     
     // issue read command
-    this->_spi->write(ENC28J60_READ_BUF_MEM);
-    this->_spi->wait();
+    _spi.write(ENC28J60_READ_BUF_MEM);
+    _spi.wait();
     
     while (len) {
         len--;
         
         // read data
-        this->_spi->write(0x00);
-        this->_spi->wait();
+        _spi.write(0x00);
+        _spi.wait();
         
-        *data = this->_spi->read();
+        *data = _spi.read();
         data++;
     }
     
-    *data='\0';
+    *data = '\0';
     
-    this->_spi->deselect();
+    _spi.deselect();
 }
 
 /**
  *
  */
-void enc28j60::writeBuffer(uint16_t len, uint8_t* data)
+void enc28j60::write_buffer(uint16_t len, uint8_t* data)
 {
-    this->_spi->select();
+    _spi.select();
     
     // issue write command
-    this->_spi->write(ENC28J60_WRITE_BUF_MEM);
-    this->_spi->wait();
+    _spi.write(ENC28J60_WRITE_BUF_MEM);
+    _spi.wait();
     
     while (len) {
         len--;
         
         // write data
-        this->_spi->write(*data);
+        _spi.write(*data);
         data++;
         
-        this->_spi->wait();
+        _spi.wait();
     }
-    this->deselect();
+    _spi.deselect();
 }
 
 /**
@@ -291,8 +245,8 @@ void enc28j60::writeBuffer(uint16_t len, uint8_t* data)
  */
 uint8_t enc28j60::read(uint8_t address)
 {
-    this->setBank(address);
-    return this->readOp(ENC28J60_READ_CTRL_REG, address);
+    this->set_bank(address);
+    return this->read_op(ENC28J60_READ_CTRL_REG, address);
 }
 
 /**
@@ -300,11 +254,11 @@ uint8_t enc28j60::read(uint8_t address)
  */
 void enc28j60::write(uint8_t address, uint8_t data)
 {
-    this->setBank(address);
-    this->writeOp(ENC28J60_WRITE_CTRL_REG, address, data);
+    this->set_bank(address);
+    this->write_op(ENC28J60_WRITE_CTRL_REG, address, data);
 }
 
-void enc28j60::phyWrite(uint8_t address, uint16_t data)
+void enc28j60::phy_write(uint8_t address, uint16_t data)
 {
     // set the PHY register address
     this->write(MIREGADR, address);
@@ -315,16 +269,16 @@ void enc28j60::phyWrite(uint8_t address, uint16_t data)
     
     // wait until the PHY write completes
     while (this->read(MISTAT) & MISTAT_BUSY) {
-        this->delayMs(15);
+        this->delay_ms(15);
     }
 }
 
-uint16_t enc28j60::phyReadH(uint8_t address)
+uint16_t enc28j60::phy_read_h(uint8_t address)
 {
 	// Set the right address and start the register read operation
     this->write(MIREGADR, address);
     this->write(MICMD, MICMD_MIIRD);
-    this->delayUs(15);
+    this->delay_us(15);
     
     // wait until the PHY read completes
 	while (this->read(MISTAT) & MISTAT_BUSY) ;
@@ -335,19 +289,18 @@ uint16_t enc28j60::phyReadH(uint8_t address)
     return this->read(MIRDH);
 }
 
-
-/**
+/*
  *
  */
-void enc28j60::send_packet(uint16_t len, uint8_t* packet)
+void enc28j60::send_packet(uint16_t len, uint8_t * packet)
 {
     // Check no transmit in progress
-    while (this->readOp(ENC28J60_READ_CTRL_REG, ECON1) & ECON1_TXRTS) {
+    while (this->read_op(ENC28J60_READ_CTRL_REG, ECON1) & ECON1_TXRTS) {
         // Reset the transmit logic problem.
         // See Rev. B4 Silicon Errata point 12.
         if (this->read(EIR) & EIR_TXERIF) {
-            this->writeOp(ENC28J60_BIT_FIELD_SET, ECON1, ECON1_TXRST);
-            this->writeOp(ENC28J60_BIT_FIELD_CLR, ECON1, ECON1_TXRST);
+            this->write_op(ENC28J60_BIT_FIELD_SET, ECON1, ECON1_TXRST);
+            this->write_op(ENC28J60_BIT_FIELD_CLR, ECON1, ECON1_TXRST);
         }
     }
     
@@ -360,22 +313,22 @@ void enc28j60::send_packet(uint16_t len, uint8_t* packet)
 	this->write(ETXNDH, (TXSTART_INIT + len) >> 8);
     
 	// write per-packet control byte (0x00 means use macon3 settings)
-    this->writeOp(ENC28J60_WRITE_BUF_MEM, 0, 0x00);
+    this->write_op(ENC28J60_WRITE_BUF_MEM, 0, 0x00);
     
 	// copy the packet into the transmit buffer
-    this->writeBuffer(len, packet);
+    this->write_buffer(len, packet);
     
 	// send the contents of the transmit buffer onto the network
-	this->writeOp(ENC28J60_BIT_FIELD_SET, ECON1, ECON1_TXRTS);
+	this->write_op(ENC28J60_BIT_FIELD_SET, ECON1, ECON1_TXRTS);
     
     // Reset the transmit logic problem.
     // See Rev. B4 Silicon Errata point 12.
     // if (this->read(EIR) & EIR_TXERIF) {
-    //      this->writeOp(ENC28J60_BIT_FIELD_CLR, ECON1, ECON1_TXRTS);
+    //      this->write_op(ENC28J60_BIT_FIELD_CLR, ECON1, ECON1_TXRTS);
     // }
 }
 
-uint16_t enc28j60::packetReceive(uint16_t maxlen, uint8_t* packet)
+uint16_t enc28j60::receive_packet(uint16_t maxlen, uint8_t* packet)
 {
 	uint16_t rxstat;
 	uint16_t len;
@@ -392,17 +345,17 @@ uint16_t enc28j60::packetReceive(uint16_t maxlen, uint8_t* packet)
 	this->write(ERDPTH, this->nextPacketPtr >> 8);
     
 	// read the next packet pointer
-	this->nextPacketPtr  = this->readOp(ENC28J60_READ_BUF_MEM, 0);
-	this->nextPacketPtr |= this->readOp(ENC28J60_READ_BUF_MEM, 0) << 8;
+	this->nextPacketPtr  = this->read_op(ENC28J60_READ_BUF_MEM, 0);
+	this->nextPacketPtr |= this->read_op(ENC28J60_READ_BUF_MEM, 0) << 8;
     
 	// read the packet length (see datasheet page 43)
-	len  = this->readOp(ENC28J60_READ_BUF_MEM, 0);
-	len |= this->readOp(ENC28J60_READ_BUF_MEM, 0) << 8;
+	len  = this->read_op(ENC28J60_READ_BUF_MEM, 0);
+	len |= this->read_op(ENC28J60_READ_BUF_MEM, 0) << 8;
     len -= 4; //remove the CRC count
     
 	// read the receive status (see datasheet page 43)
-	rxstat  = this->readOp(ENC28J60_READ_BUF_MEM, 0);
-	rxstat |= ((uint16_t)this->readOp(ENC28J60_READ_BUF_MEM, 0)) << 8;
+	rxstat  = this->read_op(ENC28J60_READ_BUF_MEM, 0);
+	rxstat |= ((uint16_t)this->read_op(ENC28J60_READ_BUF_MEM, 0)) << 8;
     
 	// limit retrieve length
     if (len > maxlen - 1) {
@@ -417,7 +370,7 @@ uint16_t enc28j60::packetReceive(uint16_t maxlen, uint8_t* packet)
         len = 0;
     } else {
         // copy the packet from the receive buffer
-        this->readBuffer(len, packet);
+        this->read_buffer(len, packet);
     }
     
 	// Move the RX read pointer to the start of the next received packet
@@ -440,18 +393,18 @@ uint16_t enc28j60::packetReceive(uint16_t maxlen, uint8_t* packet)
     }
     
 	// decrement the packet counter indicate we are done with this packet
-    this->writeOp(ENC28J60_BIT_FIELD_SET, ECON2, ECON2_PKTDEC);
+    this->write_op(ENC28J60_BIT_FIELD_SET, ECON2, ECON2_PKTDEC);
     return len;
 }
 
 /**
  * set the bank (if needed)
  */
-void enc28j60::setBank(uint8_t address)
+void enc28j60::set_bank(uint8_t address)
 {
     if ((address & BANK_MASK) != this->bank) {
-        this->writeOp(ENC28J60_BIT_FIELD_CLR, ECON1, (ECON1_BSEL1|ECON1_BSEL0));
-        this->writeOp(ENC28J60_BIT_FIELD_SET, ECON1, (address & BANK_MASK) >> 5);
+        this->write_op(ENC28J60_BIT_FIELD_CLR, ECON1, (ECON1_BSEL1|ECON1_BSEL0));
+        this->write_op(ENC28J60_BIT_FIELD_SET, ECON1, (address & BANK_MASK) >> 5);
         this->bank = (address & BANK_MASK);
     }
 }       
@@ -476,7 +429,7 @@ uint8_t enc28j60::getrev(void)
 /**
  * Has RX packet
  */
-uint8_t enc28j60::hasRxPkt(void)
+uint8_t enc28j60::has_rx_pkt(void)
 {
     if (this->read(EPKTCNT) == 0) {
         return 0;
@@ -490,6 +443,6 @@ uint8_t enc28j60::hasRxPkt(void)
  */
 uint8_t enc28j60::linkup(void)
 {
-    return this->phyReadH(PHSTAT2) && 4;
+    return this->phy_read_h(PHSTAT2) && 4;
 }
 

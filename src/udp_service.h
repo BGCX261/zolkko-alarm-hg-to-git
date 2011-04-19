@@ -76,19 +76,19 @@
 #define UDP_DATA_P 0x2a
 
 
-class Udp
+class UdpService
 {
     private:
-        const Iface * _iface;
+        Iface * _iface;
         
-        void make_eth(uint8_t * buf, const mac_addr_t dest_addr);
+        void make_eth(uint8_t * buf, const ether_addr_t * dst_addr);
         
-        void make_ip(uint8_t * buf, const ip_addr_t dest_addr);
+        void make_ip(uint8_t * buf, const ip_addr_t * dst_addr);
         
         static uint16_t checksum(uint8_t * buf, uint16_t len, uint8_t type);
         
     public:
-        Udp(const Iface * iface)
+        UdpService(Iface * iface)
         {
             _iface = iface;
         }
@@ -98,7 +98,7 @@ class Udp
             return buf[IP_PROTO_P] == IP_PROTO_ICMP_V &&
                    buf[ICMP_TYPE_P] == ICMP_TYPE_ECHOREQUEST_V;
         }
-
+        
         inline uint8_t is_udp(uint8_t * buf)
         {
             return buf[IP_PROTO_P] == IP_PROTO_UDP_V;
@@ -108,9 +108,9 @@ class Udp
         
         uint8_t is_ip_and_myip(uint8_t * buf, uint8_t len);
         
-        void makeArpAnswerFromRequest(uint8_t * buf, uint8_t len);
+        void arp_answer_from_request(uint8_t * buf, uint8_t len);
         
-        void makeEchoReplyFromRequest(uint8_t * buf, uint8_t len);
+        void echo_reply_from_request(uint8_t * buf, uint8_t len);
         
         void reply_from_request(uint8_t * buf, char * data, uint8_t datalen, uint16_t port);
 };

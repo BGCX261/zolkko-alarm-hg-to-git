@@ -1,7 +1,7 @@
 
 SRC=main.cc ili9320.cc enc28j60.cc utils.cc spi.cc udp_service.cc
-CPU=atxmega32a4
-DEV=x32a4
+CPU=atxmega128a3
+DEV=x128a3
 FREQ=2000000UL
 DEF_PAR=-Wall -gdwarf-2 -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums
 

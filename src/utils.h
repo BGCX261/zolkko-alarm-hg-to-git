@@ -5,9 +5,9 @@
 #ifndef _UTILS_H_
 #define _UTILS_H_
 
-#include <inttypes.h>
+inline void _delay_ms(const uint16_t ms);
 
-inline void delayMs(const uint16_t ms);
+inline void _delay_us(const uint16_t us);
 
 #endif
 
