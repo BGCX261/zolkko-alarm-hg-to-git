@@ -6,50 +6,7 @@
 #include <util/delay_basic.h>
 #include "spi.h"
 #include "enc28j60.h"
-
-
-void enc28j60::delay_us(uint16_t count)
-{
-    delay_us(count);
-}
-
-/**
- * Delay at least count miliseconds
- */
-void enc28j60::delay_ms(uint16_t count)
-{
-    uint32_t c = 0;
-    
-    if (CLK.CTRL & CLK_SCLKSEL_RC32K_gc) {
-        c = 9;
-	} else if (CLK.CTRL & CLK_SCLKSEL_RC32M_gc){
-        c = 8001;
-	} else if (CLK_SCLKSEL_RC2M_gc == (CLK.CTRL & CLK_SCLKSEL_gm)) {
-        c = 501;
-	} else if (CLK.CTRL & CLK_SCLKSEL_PLL_gc) {
-		float factor = ((OSC.PLLCTRL & OSC_PLLFAC_gm) >> OSC_PLLFAC_gp) * 1.0;
-        
-		if (OSC.PLLCTRL & OSC_PLLSRC_RC2M_gc) {
-            c = ((2000.0 * (factor / 1000.0)) / 4) + 1;
-        } else if (OSC.PLLCTRL & OSC_PLLSRC_RC32M_gc) {
-            count = ((32000.0 * (factor / 1000.0)) / 4) + 1;
-        } else {
-            count = (((F_CPU * factor) / 1000.0) / 4) + 1;
-        }
-	} else if (CLK.CTRL & CLK_SCLKSEL_XOSC_gc) {
-		c = (uint32_t)(F_CPU / 1000.0 / 4) + 1;
-	}
-    
-    while (count > 0) {
-        uint32_t i = c;
-        while (i > 0xffff) {
-            _delay_loop_2(0xffff);
-            i -= 0xffff;
-        }
-        _delay_loop_2(i);
-        count--;
-    }
-}
+#include "utils.h"
 
 /**
  * Initialize enc28j60 with mac address macaddr
@@ -57,8 +14,7 @@ void enc28j60::delay_ms(uint16_t count)
 void enc28j60::init(void)
 {
     // At this point Spi module have to be initialized
-    
-    // this->soft_reset();
+    soft_reset();
     
 	// Do bank 0 stuff
 	// initialize receive buffer
@@ -144,6 +100,22 @@ void enc28j60::init(void)
     
 	// enable packet reception
     this->write_op(ENC28J60_BIT_FIELD_SET, ECON1, ECON1_RXEN);
+}
+
+/**
+ * Performs soft reset.
+ * The r(ESTAT) & ESTAT_CLKRDY does not work.
+ * See Rev. B4 Silicon Errata point.
+ */
+void enc28j60::soft_reset(void)
+{
+	write_op(ENC28J60_SOFT_RESET, 0, ENC28J60_SOFT_RESET);
+	
+	// Chip requires at least 1ms delay for stabilization.
+	xdelay_ms(ENC28J60_MIN_RESET_DELAY); 
+	bank = 0;
+	
+	while (!(read(ESTAT) & ESTAT_CLKRDY)) ;
 }
 
 /**

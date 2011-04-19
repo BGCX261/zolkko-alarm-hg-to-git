@@ -5,6 +5,7 @@
 #include <inttypes.h>
 #include "spi.h"
 #include "iface.h"
+#include "utils.h"
 
 
 // ENC28J60 Control Registers
@@ -266,6 +267,10 @@
 #define MAX_FRAMELEN    1500
 
 
+
+#define ENC28J60_MIN_RESET_DELAY 50
+
+
 class enc28j60 : public Iface
 {
     private:
@@ -274,21 +279,8 @@ class enc28j60 : public Iface
         uint8_t bank;
         
         uint16_t nextPacketPtr;
-        
-        void delay_us(uint16_t us);
-        
-        void delay_ms(uint16_t ms);
-        
-        /**
-         * Performs soft reset.
-         * The r(ESTAT) & ESTAT_CLKRDY does not work.
-         * See Rev. B4 Silicon Errata point.
-         */
-        inline void soft_reset(void)
-        {
-            this->write_op(ENC28J60_SOFT_RESET, 0, ENC28J60_SOFT_RESET);
-            this->delay_ms(50);
-        }
+		
+        void soft_reset(void);
         
     public:
         
@@ -296,6 +288,8 @@ class enc28j60 : public Iface
             Iface(macaddr, ipaddr),
             _spi(spi)
         {
+            bank = 0;
+            nextPacketPtr = 0;
         }
         
         Spi& get_spi(void)

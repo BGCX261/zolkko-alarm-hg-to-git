@@ -1,5 +1,5 @@
 
-SRC=main.cc ili9320.cc enc28j60.cc utils.cc spi.cc udp_service.cc
+SRC=main.cc ili9320.cc enc28j60.cc utils.cc spi.cc udp_service.cc utils.cc
 CPU=atxmega128a3
 DEV=x128a3
 FREQ=2000000UL
