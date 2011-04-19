@@ -25,9 +25,17 @@ static ip_addr_t device_ip = {0x00, 0x00, 0x00, 0x00};
 
 int main(void)
 {
+    // RESET Pin on enc28j60
+    PORTE.DIRSET = _BV(2);
+    PORTE.OUTSET = _BV(2);
+    
     // Debug pin direction
     PORTD.DIRSET = _BV(6);
     PORTD.DIRSET = _BV(5);
+    
+    // Stabilize reset of enc28j60 & etc
+    _delay_ms(100);
+
 
     // TODO: increase controller speed upto 12 MHz
     // TODO: change MISO / MOSI
@@ -39,11 +47,13 @@ int main(void)
             SPI_PIN(PORTE, 7),  // Clock
             SPI_PIN(PORTE, 4)); // Chip Select
     
+    _delay_ms(100);
+    
     // Initialize enc28j60 interface
     enc28j60 iface(spi, &device_mac, &device_ip);
-    iface.init();
-    _delay_ms(5);
-
+    
+        iface.init();
+        
     uint8_t v = iface.test();
     if (v == 0b00000010 ||
         v == 0b00000100 ||
