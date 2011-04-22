@@ -1,5 +1,6 @@
-
+#include <avr/io.h>
 #include <string.h>
+#include <util/delay.h>
 #include "iface.h"
 #include "udp_service.h"
 
@@ -9,7 +10,7 @@
  */
 void UdpService::make_eth(uint8_t * buf, const ether_addr_t * dst_addr)
 {
-    ether_addr_t * src_addr = (ether_addr_t *) this->_iface->get_mac_addr();
+    ether_addr_t * src_addr = (ether_addr_t *) _iface->get_mac_addr();
     
     memcpy(&buf[ETH_DST_MAC], dst_addr, IF_ETHER_ADDR_LEN);
     memcpy(&buf[ETH_SRC_MAC], src_addr, IF_ETHER_ADDR_LEN);
@@ -20,7 +21,7 @@ void UdpService::make_eth(uint8_t * buf, const ether_addr_t * dst_addr)
  */
 void UdpService::make_ip(uint8_t * buf, const ip_addr_t * dst_addr)
 {
-    ip_addr_t * src_addr = (ip_addr_t *) this->_iface->get_ip_addr();
+    ip_addr_t * src_addr = (ip_addr_t *) _iface->get_ip_addr();
     
     memcpy(&buf[IP_DST_P], dst_addr, IF_IP_ADDR_LEN);
     memcpy(&buf[IP_SRC_P], src_addr, IF_IP_ADDR_LEN);
@@ -223,5 +224,85 @@ uint16_t UdpService::checksum(uint8_t * buf, uint16_t len, uint8_t type)
     
     // build 1's complement:
     return ((uint16_t) sum ^ 0xffff);
+}
+
+// TODO: increase buffer up to the maximum size 1500 byte + 20 + 8 + 14
+void UdpService::send_to(ether_addr_t * dst_mac, ip_addr_t * dst_ip, uint16_t dst_port, uint8_t * data, uint8_t data_len)
+{
+    uint8_t buf[150];
+    
+    // ether_addr_t * mac = (ether_addr_t *) _iface->get_mac_addr();
+
+    // PORTE.OUTTGL = _BV(0);
+        
+    // Add source and dest mac addresses
+    make_eth(buf, dst_mac);
+    
+    if (data_len > 100) {
+        data_len = 100;
+    }
+    
+    // Payload data length of mac-frame
+    buf[IP_TOTLEN_H_P] = 0;
+    buf[IP_TOTLEN_L_P] = IP_HEADER_LEN + UDP_HEADER_LEN + data_len;
+    
+    // IP Packet
+    buf[IP_P] = 0x45;       // Version + header length
+    buf[IP_P + 1] = 0;      // deff service code point + ECN
+    
+    
+    buf[IP_TOTLEN_H_P] = 0; // Total Length Hi
+    buf[IP_TOTLEN_L_P] = IP_HEADER_LEN + UDP_HEADER_LEN + data_len; // Total Length Lo
+    
+    buf[IP_P + 4] = 0;      // Identification
+    buf[IP_P + 5] = 0;
+    
+    buf[IP_FLAGS_P]     = 0x40; // don't fragment
+    buf[IP_FLAGS_P + 1] = 0;    // fragement offset
+    
+    buf[IP_TTL_P]       = 0x40; // ttl
+    
+    buf[IP_PROTO_P]     = IP_PROTO_UDP_V; // UDP protocol
+    
+    buf[IP_CHECKSUM_P] = 0;
+    buf[IP_CHECKSUM_P + 1] = 0;
+    
+    // Fill source and dest addresses
+    ip_addr_t * src_ip = (ip_addr_t *) _iface->get_ip_addr();
+    
+    memcpy(&buf[IP_DST_P], dst_ip, IF_IP_ADDR_LEN);
+    memcpy(&buf[IP_SRC_P], src_ip, IF_IP_ADDR_LEN);
+    
+    PORTE.OUTTGL = _BV(1); _delay_ms(300);
+    
+    // calculate IP check summ
+    uint16_t ck = UdpService::checksum(&buf[IP_P], IP_HEADER_LEN, 0);
+    buf[IP_CHECKSUM_P] = ck >> 8;
+    buf[IP_CHECKSUM_P + 1] = ck & 0xff;
+    
+    // UDP Packet:
+    buf[UDP_DST_PORT_H_P] = dst_port >> 8;
+    buf[UDP_DST_PORT_L_P] = dst_port & 0xff;
+    
+    buf[UDP_SRC_PORT_H_P] = 0x1f; // 8081
+    buf[UDP_SRC_PORT_L_P] = 0x91;
+    
+    
+    buf[UDP_LEN_H_P] = 0;
+    buf[UDP_LEN_L_P] = UDP_HEADER_LEN + data_len; // data length should be less that 255 - udp_hdr - ip_hdr 
+    
+    // zero the checksum
+    buf[UDP_CHECKSUM_H_P] = 0;
+    buf[UDP_CHECKSUM_L_P] = 0;
+    
+    // Copy UDP DATA
+    memcpy(&buf[UDP_DATA_P], data, data_len);
+    
+    ck = UdpService::checksum(&buf[IP_SRC_P], 16 + data_len, 1);
+    buf[UDP_CHECKSUM_H_P] = ck >> 8;
+    buf[UDP_CHECKSUM_L_P] = ck & 0xff;
+    
+    _iface->send_packet(UDP_HEADER_LEN + IP_HEADER_LEN + ETH_HEADER_LEN + data_len, buf);
+    // PORTE.OUTTGL = _BV(0);
 }
 

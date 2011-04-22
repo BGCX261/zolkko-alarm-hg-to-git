@@ -1,12 +1,16 @@
-
+/*
+ * Iface interface implementation for enc28j60 IC.
+ * This driver does not support INT and RST pins and
+ * Test on enc28j60-b7 IC revision.
+ * Based on avr-uip code.
+ *
+ * Copyright (c) 2011 Alex Anisimov, <zolkko@gmail.com>
+ * GPL v3
+ */
 #ifndef _ENC28J60_H_
 #define _ENC28J60_H_
 
-#include <inttypes.h>
-#include "spi.h"
-#include "iface.h"
-#include "utils.h"
-
+#define ENC28J60_REV_B7 0b00000110
 
 // ENC28J60 Control Registers
 // Control register definitions are a combination of address,
@@ -282,32 +286,15 @@ class enc28j60 : public Iface
 		
         void soft_reset(void);
         
-    public:
-        
-        enc28j60(Spi& spi, ether_addr_t * macaddr, ip_addr_t * ipaddr) :
-            Iface(macaddr, ipaddr),
-            _spi(spi)
-        {
-            bank = 0;
-            nextPacketPtr = 0;
-        }
-        
-        Spi& get_spi(void)
-        {
-            return _spi;
-        }
-        
-        virtual void init(void);
+        void set_bank(uint8_t address);
         
         void write_op(uint8_t op, uint8_t address, uint8_t data);
         
         uint8_t read_op(uint8_t op, uint8_t address);
-        
+
         void read_buffer(uint16_t len, uint8_t* data);
         
         void write_buffer(uint16_t len, uint8_t* data);
-        
-        void set_bank(uint8_t address);
         
         uint8_t read(uint8_t address);
         
@@ -319,8 +306,6 @@ class enc28j60 : public Iface
         
         void clkout(uint8_t clk);
         
-        virtual void send_packet(uint16_t len, uint8_t * packet);
-        
         uint16_t receive_packet(uint16_t maxlen, uint8_t* packet);
         
         uint8_t getrev(void);
@@ -328,10 +313,28 @@ class enc28j60 : public Iface
         uint8_t has_rx_pkt(void);
         
         uint8_t linkup(void);
-
-        uint8_t test(void)
+        
+    public:
+        
+        enc28j60(Spi& spi, ether_addr_t * macaddr, ip_addr_t * ipaddr) :
+            Iface(macaddr, ipaddr),
+            _spi(spi)
         {
-            return this->read(EREVID);
+            bank = 0;
+            nextPacketPtr = 0;
+        }
+        
+        virtual void init(void);
+        
+        
+        virtual void send_packet(uint16_t len, uint8_t * packet);
+        
+        /*
+         * Checks if selected chip is rev B7
+         */
+        uint8_t is_supported(void)
+        {
+            return read(EREVID) == ENC28J60_REV_B7;
         }
 };
 

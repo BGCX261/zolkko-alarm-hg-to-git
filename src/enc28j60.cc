@@ -3,10 +3,11 @@
  */
 
 #include <avr/io.h>
-#include <util/delay_basic.h>
+#include <util/delay.h>
+#include <inttypes.h>
 #include "spi.h"
+#include "iface.h"
 #include "enc28j60.h"
-#include "utils.h"
 
 /**
  * Initialize enc28j60 with mac address macaddr
@@ -112,10 +113,10 @@ void enc28j60::soft_reset(void)
 	write_op(ENC28J60_SOFT_RESET, 0, ENC28J60_SOFT_RESET);
 	
 	// Chip requires at least 1ms delay for stabilization.
-	xdelay_ms(ENC28J60_MIN_RESET_DELAY); 
+	_delay_ms(ENC28J60_MIN_RESET_DELAY); 
 	bank = 0;
 	
-	while (!(read(ESTAT) & ESTAT_CLKRDY)) ;
+	// while (!(read(ESTAT) & ESTAT_CLKRDY)) ;
 }
 
 /**
@@ -241,7 +242,7 @@ void enc28j60::phy_write(uint8_t address, uint16_t data)
     
     // wait until the PHY write completes
     while (this->read(MISTAT) & MISTAT_BUSY) {
-        this->delay_ms(15);
+        _delay_ms(15);
     }
 }
 
@@ -250,7 +251,7 @@ uint16_t enc28j60::phy_read_h(uint8_t address)
 	// Set the right address and start the register read operation
     this->write(MIREGADR, address);
     this->write(MICMD, MICMD_MIIRD);
-    this->delay_us(15);
+    _delay_us(15);
     
     // wait until the PHY read completes
 	while (this->read(MISTAT) & MISTAT_BUSY) ;
@@ -388,14 +389,6 @@ void enc28j60::set_bank(uint8_t address)
 void enc28j60::clkout(uint8_t clk)
 {
     this->write(ECOCON, clk & 0x7);
-}
-
-/**
- *
- */
-uint8_t enc28j60::getrev(void)
-{
-    return (this->read(EREVID));
 }
 
 /**

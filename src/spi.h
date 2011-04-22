@@ -1,14 +1,19 @@
-/**
- * (c) copyright Alex Anisimov <zolkko@gmail.com>
+/*
+ * Interface master XMega SPI module.
+ *
+ * TODO: Add interrupt support, async bufferred transfer
+ * and receiving, DMA slave mode, acting in slave mode,
+ * switching into slave mode and other XMega SPI module features.
+ *
+ * Copyright (c) 2011 Alex Anisimov, <zolkko@gmail.com>
  * GPL v3
  */
 
 #ifndef _SPI_H_
 #define _SPI_H_
 
-#define SPI_PIN(port, pin) &port, _BV(pin)
-
-class Spi {
+class Spi
+{
     private :
         SPI_t * _spi;
         
@@ -20,40 +25,33 @@ class Spi {
         
         /*
          * Initialization in constructor garanties that
-         * SPI module would be initialized
-         *
-         * TODO: pass SPI module configuration parameters into constructor
+         * SPI module would be initialized.
          */
         Spi(SPI_t * spi,
-            PORT_t * mosi_port, uint8_t mosi_bm,
-            PORT_t * miso_port, uint8_t miso_bm,
-            PORT_t * clk_port,  uint8_t clk_bm,
-            PORT_t * ss_port,   uint8_t ss_bm)
+                uint8_t module_ctrl,
+                PORT_t * sck_port, uint8_t sck_bm,
+                PORT_t * mosi_port, uint8_t mosi_bm,
+                PORT_t * ss_port, register8_t * ss_pinctrl, uint8_t ss_bm)
         {
             _spi = spi;
             _ss_port = ss_port;
             _ss_bm = ss_bm;
             
-            // Initialize GPIO
-            clk_port->DIRSET = clk_bm; // Clock - output low
-            clk_port->OUTCLR = clk_bm;
+            // Initialize chip select line.
+            // Output pull-up is set to prevent swiching into slave mode.
+            ss_port->DIRSET = ss_bm;
+            *ss_pinctrl = PORT_OPC_WIREDANDPULL_gc;
+            ss_port->OUTSET = ss_bm;
             
-            miso_port->DIRCLR = miso_bm; // MISO - input nevermind
+            // Initialize SPI module in master mode
+            spi->CTRL = SPI_ENABLE_bm | SPI_MASTER_bm | module_ctrl;
+            spi->INTCTRL = SPI_INTLVL_OFF_gc;
             
-            mosi_port->DIRSET = mosi_bm; // MOSI - output low
-            mosi_port->OUTCLR = mosi_bm;
+            // Initialize SCK and MOSI pins
+            mosi_port->DIRSET = mosi_bm;
+            sck_port->DIRSET = sck_bm;
             
-            _ss_port->DIRSET = _ss_bm; // Chip select - output hi
-            _ss_port->OUTSET = _ss_bm;
-            
-            // Initialize SPI module
-            // for enc28j60 max speed should be no longer than 10Mbit/s
-            _spi->CTRL = SPI_ENABLE_bm |
-                SPI_PRESCALER_DIV4_gc |
-                SPI_DORD_bm   |
-                SPI_MODE_0_gc |
-                SPI_CLK2X_bm  |
-                SPI_MASTER_bm ;
+            // Other PIN paramters SPI module sets itself in mastermode.
         }
         
         inline void write(uint8_t data)

@@ -2,11 +2,12 @@
  * (c) copyright Alex Anisimov <zolkko@gmail.com>
  * GPL v3
  */
+
 #include <avr/io.h>
-#include <util/delay_basic.h>
 #include "utils.h"
 
-inline uint32_t get_cpu_freq(void)
+
+uint32_t get_cpu_freq(void)
 {
     uint32_t clk = 0;
     
@@ -33,41 +34,23 @@ inline uint32_t get_cpu_freq(void)
     return clk;
 }
 
-inline void xdelay_ms(const double ms)
+inline void _delay_operations(uint32_t operations)
 {
-    uint32_t cpu_freq = get_cpu_freq();
-    uint16_t ticks;
-    double tmp = ((cpu_freq) / 4e3) * ms;
+    uint32_t times = operations / 4;
     
-    if (tmp < 1.0) {
-        ticks = 1;
-    } else if (tmp > 65535) {
-        ticks = (uint16_t) (ms * 10.0);
-        while(ticks) {
-            _delay_loop_2(((cpu_freq) / 4e3) / 10);
-            ticks --;
+    if (times > 1) {
+        if (times > 0xffff) {
+            PORTD.OUTTGL = _BV(5);
+            while (times >= 0xffff) {
+                _delay_loop_2(0xffff);
+                times -= 0xffff;
+            }
         }
-        return;
-    } else {
-        ticks = (uint16_t)tmp;
+        
+        if (times != 0) {
+            PORTD.OUTTGL = _BV(6);
+            _delay_loop_2((uint16_t)(times & 0xffff));
+        }
     }
-	_delay_loop_2(ticks);
-}
-
-inline void xdelay_us(const double us)
-{
-    uint32_t cpu_freq = get_cpu_freq();
-    
-    uint8_t ticks;
-    double tmp = ((cpu_freq) / 3e6) * us;
-    if (tmp < 1.0) {
-        ticks = 1;
-    } else if (tmp > 255) {
-        xdelay_ms(us / 1000.0);
-        return;
-    } else {
-        ticks = (uint8_t)tmp;
-    }
-	_delay_loop_1(ticks);
 }
 

@@ -113,6 +113,8 @@ class UdpService
         void echo_reply_from_request(uint8_t * buf, uint8_t len);
         
         void reply_from_request(uint8_t * buf, char * data, uint8_t datalen, uint16_t port);
+        
+        void send_to(ether_addr_t * dst_mac, ip_addr_t * dst_ip, uint16_t dst_port, uint8_t * data, uint8_t data_len);
 };
 
 #endif
