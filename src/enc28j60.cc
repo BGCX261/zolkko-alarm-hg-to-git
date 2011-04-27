@@ -1,7 +1,12 @@
-/**
- * Based on the enc28j60.c file from the AVRlib library by Pascal Stang.
+/*
+ * Network driver for ENC28J60 IC
+ *
+ * TODO: Use standard packet definitions
+ * TODO: Use F_CPU independent delay implementation
+ * 
+ * Copyright (c) 2011 Alex Anisimov, <zolkko@gmail.com>
  */
-
+#include <stdio.h>
 #include <avr/io.h>
 #include <util/delay.h>
 #include <inttypes.h>
@@ -119,7 +124,7 @@ void enc28j60::soft_reset(void)
 	// while (!(read(ESTAT) & ESTAT_CLKRDY)) ;
 }
 
-/**
+/*
  *
  */
 void enc28j60::write_op(uint8_t op, uint8_t address, uint8_t data)
@@ -137,7 +142,7 @@ void enc28j60::write_op(uint8_t op, uint8_t address, uint8_t data)
     _spi.deselect();
 }
 
-/**
+/*
  *
  */
 uint8_t enc28j60::read_op(uint8_t op, uint8_t address)
@@ -163,7 +168,7 @@ uint8_t enc28j60::read_op(uint8_t op, uint8_t address)
     return _spi.read();
 }
 
-/**
+/*
  *
  */
 void enc28j60::read_buffer(uint16_t len, uint8_t* data)
@@ -190,7 +195,7 @@ void enc28j60::read_buffer(uint16_t len, uint8_t* data)
     _spi.deselect();
 }
 
-/**
+/*
  *
  */
 void enc28j60::write_buffer(uint16_t len, uint8_t* data)
@@ -213,7 +218,7 @@ void enc28j60::write_buffer(uint16_t len, uint8_t* data)
     _spi.deselect();
 }
 
-/**
+/*
  * Read data from enc28j60 register
  */
 uint8_t enc28j60::read(uint8_t address)
@@ -222,7 +227,7 @@ uint8_t enc28j60::read(uint8_t address)
     return this->read_op(ENC28J60_READ_CTRL_REG, address);
 }
 
-/**
+/*
  * Write data into enc28j60 register
  */
 void enc28j60::write(uint8_t address, uint8_t data)
@@ -231,6 +236,9 @@ void enc28j60::write(uint8_t address, uint8_t data)
     this->write_op(ENC28J60_WRITE_CTRL_REG, address, data);
 }
 
+/*
+ *
+ */
 void enc28j60::phy_write(uint8_t address, uint16_t data)
 {
     // set the PHY register address
@@ -246,6 +254,9 @@ void enc28j60::phy_write(uint8_t address, uint16_t data)
     }
 }
 
+/*
+ *
+ */
 uint16_t enc28j60::phy_read_h(uint8_t address)
 {
 	// Set the right address and start the register read operation
@@ -267,6 +278,9 @@ uint16_t enc28j60::phy_read_h(uint8_t address)
  */
 void enc28j60::send_packet(uint16_t len, uint8_t * packet)
 {
+	printf("enc ");
+	_delay_ms(500);
+	/*
     // Check no transmit in progress
     while (this->read_op(ENC28J60_READ_CTRL_REG, ECON1) & ECON1_TXRTS) {
         // Reset the transmit logic problem.
@@ -299,8 +313,12 @@ void enc28j60::send_packet(uint16_t len, uint8_t * packet)
     // if (this->read(EIR) & EIR_TXERIF) {
     //      this->write_op(ENC28J60_BIT_FIELD_CLR, ECON1, ECON1_TXRTS);
     // }
+	*/
 }
 
+/*
+ *
+ */
 uint16_t enc28j60::receive_packet(uint16_t maxlen, uint8_t* packet)
 {
 	uint16_t rxstat;
@@ -370,7 +388,7 @@ uint16_t enc28j60::receive_packet(uint16_t maxlen, uint8_t* packet)
     return len;
 }
 
-/**
+/*
  * set the bank (if needed)
  */
 void enc28j60::set_bank(uint8_t address)
@@ -382,7 +400,7 @@ void enc28j60::set_bank(uint8_t address)
     }
 }       
 
-/**
+/*
  * Setup clock out
  * 2 is 12.5MHz
  */
@@ -391,7 +409,7 @@ void enc28j60::clkout(uint8_t clk)
     this->write(ECOCON, clk & 0x7);
 }
 
-/**
+/*
  * Has RX packet
  */
 uint8_t enc28j60::has_rx_pkt(void)
@@ -403,11 +421,10 @@ uint8_t enc28j60::has_rx_pkt(void)
     }
 }
 
-/**
+/*
  * Link status
  */
 uint8_t enc28j60::linkup(void)
 {
     return this->phy_read_h(PHSTAT2) && 4;
 }
-

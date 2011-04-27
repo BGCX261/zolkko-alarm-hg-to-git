@@ -2,8 +2,8 @@
  * Based on the net.h file from the AVRlib library by Pascal Stang.
  */
 
-#ifndef _UDP_SERVICE_H_
-#define _UDP_SERVICE_H_
+#ifndef _udp_service_h_
+#define _udp_service_h_
 
 #define ETH_HEADER_LEN	14
 
@@ -76,10 +76,10 @@
 #define UDP_DATA_P 0x2a
 
 
-class UdpService
+class udp_service
 {
     private:
-        Iface * _iface;
+        iface& _iface;
         
         void make_eth(uint8_t * buf, const ether_addr_t * dst_addr);
         
@@ -88,9 +88,8 @@ class UdpService
         static uint16_t checksum(uint8_t * buf, uint16_t len, uint8_t type);
         
     public:
-        UdpService(Iface * iface)
+        udp_service(iface& __iface) : _iface(__iface)
         {
-            _iface = iface;
         }
         
         inline uint8_t is_echo(uint8_t * buf)

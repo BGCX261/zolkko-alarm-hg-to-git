@@ -7,8 +7,8 @@
  * Copyright (c) 2011 Alex Anisimov, <zolkko@gmail.com>
  * GPL v3
  */
-#ifndef _ENC28J60_H_
-#define _ENC28J60_H_
+#ifndef _enc28j60_h_
+#define _enc28j60_h_
 
 #define ENC28J60_REV_B7 0b00000110
 
@@ -271,14 +271,13 @@
 #define MAX_FRAMELEN    1500
 
 
-
 #define ENC28J60_MIN_RESET_DELAY 50
 
 
-class enc28j60 : public Iface
+class enc28j60 : public iface
 {
     private:
-        Spi& _spi;
+        spi& _spi;
         
         uint8_t bank;
         
@@ -316,18 +315,18 @@ class enc28j60 : public Iface
         
     public:
         
-        enc28j60(Spi& spi, ether_addr_t * macaddr, ip_addr_t * ipaddr) :
-            Iface(macaddr, ipaddr),
-            _spi(spi)
+        enc28j60(spi& __spi, const ether_addr_t& macaddr, const ip_addr_t& ipaddr) :
+            iface(macaddr, ipaddr),
+            _spi(__spi)
         {
             bank = 0;
             nextPacketPtr = 0;
         }
         
-        virtual void init(void);
+        void init(void);
         
         
-        virtual void send_packet(uint16_t len, uint8_t * packet);
+        void send_packet(uint16_t len, uint8_t * packet);
         
         /*
          * Checks if selected chip is rev B7

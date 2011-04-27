@@ -12,6 +12,7 @@
 extern "C" {
 #endif
 
+
 /*
  * Returns CPU freq according to current
  * clock source.

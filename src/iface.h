@@ -13,19 +13,18 @@
 #include "net.h"
 
 
-class Iface
+class iface
 {
     protected:
-        // TODO: change to references
-        ether_addr_t _macaddr;
+        const ether_addr_t& _macaddr;
         
-        ip_addr_t _ip;
+        const ip_addr_t& _ip;
         
     public:
-        Iface (const ether_addr_t * macaddr, const ip_addr_t * ip)
+        iface (const ether_addr_t& __macaddr, const ip_addr_t& __ip) :
+			_macaddr(__macaddr),
+			_ip(__ip)
         {
-            memcpy(&_macaddr, macaddr, IF_ETHER_ADDR_LEN);
-            memcpy(&_ip, ip, IF_IP_ADDR_LEN);
         }
 
         virtual void init(void) = 0;
@@ -33,17 +32,17 @@ class Iface
         /**
          * Returns interface mac address
          */
-        const ether_addr_t * get_mac_addr(void)
+        const ether_addr_t& get_mac_addr(void)
         {
-            return &_macaddr;
+            return _macaddr;
         }
         
         /**
          * Returns interface ip address
          */
-        const ip_addr_t * get_ip_addr(void)
+        const ip_addr_t& get_ip_addr(void)
         {
-            return &_ip;
+            return _ip;
         }
         
         /**

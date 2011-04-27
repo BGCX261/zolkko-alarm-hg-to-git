@@ -9,10 +9,10 @@
  * GPL v3
  */
 
-#ifndef _SPI_H_
-#define _SPI_H_
+#ifndef _spi_h_
+#define _spi_h_
 
-class Spi
+class spi
 {
     private :
         SPI_t * _spi;
@@ -27,7 +27,7 @@ class Spi
          * Initialization in constructor garanties that
          * SPI module would be initialized.
          */
-        Spi(SPI_t * spi,
+        spi(SPI_t * spi,
                 uint8_t module_ctrl,
                 PORT_t * sck_port, uint8_t sck_bm,
                 PORT_t * mosi_port, uint8_t mosi_bm,
