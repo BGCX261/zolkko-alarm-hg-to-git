@@ -1,5 +1,7 @@
-/**
+/*
  * Common network interface structures and types
+ *
+ * Copyright (c) 2011 Alex Anisimov, <zolkko@gmail.com>
  */
 
 #ifndef _NET_H_
@@ -9,7 +11,7 @@
 
 
 /*
- * Ethernet structures
+ * Ethernet address
  */
 
 #define IF_ETHER_ADDR_LEN 6
@@ -23,6 +25,24 @@ typedef uint8_t ether_addr_t[IF_ETHER_ADDR_LEN];
 #define IF_IP_ADDR_LEN 4
 
 typedef uint8_t ip_addr_t[IF_IP_ADDR_LEN];
+
+/*
+ * Ethernet frame
+ *
+ * Statically allocate
+ */
+typedef struct _ether_frame {
+    uint8_t preamble[7];
+    uint8_t start_of_frame;
+    ether_addr_t dst_mac;
+    ehter_addr_t src_mac;
+    uint8_t length;
+    uint8_t payload[IF_PAYLOAD_MAX];
+};
+
+/*
+ * IP Header
+ */
 
 typedef struct _ip_hdr
 {
