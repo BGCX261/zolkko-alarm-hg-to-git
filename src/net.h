@@ -9,7 +9,9 @@
 
 #include <inttypes.h>
 
-#define uint16_ton(X) (((X & 0xff) << 8) | ((X & 0xff00) >> 8))
+#define uint16_to_n(X) (((X & 0x00ff) << 8) | ((X & 0xff00) >> 8))
+
+#define n_to_uint16(X) (((X & 0x00ff) << 8) | ((X & 0xff00) >> 8))
 
 #define set_mac(mac, x0, x1, x2, x3, x4, x5) mac[0] = x0; mac[1] = x1; mac[2] = x2; mac[3] = x3; mac[4] = x4; mac[5] = x5
 
@@ -20,6 +22,8 @@
 #define assign_ip(ip1, ip2) ip1[0] = ip2[0]; ip1[1] = ip2[1]; ip1[2] = ip2[2]; ip1[3] = ip2[3]
 
 #define equal_ip(ip1, ip2) (ip1[0] == ip2[0] && ip1[1] == ip2[1] && ip1[2] == ip2[2] && ip1[3] == ip2[3])
+
+#define CRC32_LEN 4
 
 /*
  * Ethernet address
@@ -55,8 +59,11 @@ typedef struct _ether_frame_t {
     // CRC32 should be located at the actual end of payload data
 } ether_frame_t;
 
-#define ETHER_TYPE_ARP 0x0806
-#define ETHER_TYPE_IP  0x0800
+/*
+ * Ethernet packet types
+ */
+#define ETHER_TYPE_ARP 0x0608
+#define ETHER_TYPE_IP  0x0080
 
 /*
  * ARP request header

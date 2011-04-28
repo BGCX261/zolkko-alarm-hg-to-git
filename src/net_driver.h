@@ -19,9 +19,9 @@ class net_driver
         
         virtual void init(const ether_addr_t& mac) = 0;
         
-        virtual void send(ether_frame_t& frame);
+        virtual uint8_t send(ether_frame_t& frame) = 0;
         
-        virtual ether_frame_t& receive(ether_frame_t& frame);
+        virtual uint8_t receive(ether_frame_t& frame) = 0;
         
         virtual uint8_t is_supported(void) = 0;
         

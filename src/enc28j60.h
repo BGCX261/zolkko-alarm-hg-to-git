@@ -283,31 +283,50 @@ class enc28j60 : public net_driver
         uint8_t bank;
         
         uint16_t nextPacketPtr;
-		
+	    
+        /*
+         * Performs soft reset.
+         * The r(ESTAT) & ESTAT_CLKRDY does not work.
+         * See Rev. B4 Silicon Errata point.
+         */
         void soft_reset(void);
         
+        /*
+         * Set the bank (if needed)
+         */
         void set_bank(uint8_t address);
         
         void write_op(uint8_t op, uint8_t address, uint8_t data);
         
         uint8_t read_op(uint8_t op, uint8_t address);
-
+        
         void read_buffer(uint16_t len, uint8_t* data);
         
         void write_buffer(uint16_t len, uint8_t* data);
         
+        /*
+         * Read data from enc28j60 register
+         */
         uint8_t read(uint8_t address);
         
+        /*
+         * Write data into enc28j60 register
+         */
         void write(uint8_t address, uint8_t data);
         
         uint16_t phy_read_h(uint8_t address);
         
         void phy_write(uint8_t address, uint16_t data);
         
+        /*
+         * Setup clock out
+         * 2 is 12.5MHz
+         */
         void clkout(uint8_t clk);
         
-        uint16_t receive_packet(uint16_t maxlen, uint8_t* packet);
-        
+        /*
+         * Link status
+         */
         uint8_t linkup(void);
         
     public:
@@ -315,16 +334,31 @@ class enc28j60 : public net_driver
         {
             bank = 0;
             nextPacketPtr = 0;
-        } 
+        }
         
+        /*
+         * Initialize enc28j60 with mac address macaddr
+         */
         void init(const ether_addr_t& mac);
         
-        void send(ether_frame_t& frame);
+        /*
+         * Send packet data via driver
+         */
+        uint8_t send(ether_frame_t& frame);
         
-        ether_frame_t& receive(ether_frame_t& frame);
+        /*
+         * Receive packet from driver
+         */
+        uint8_t receive(ether_frame_t& frame);
         
+        /*
+         * Only ENC28J60 Revision B7 IC is supported
+         */
         uint8_t is_supported(void);
         
+        /*
+         * Has packet for processing
+         */
         uint8_t has_packet(void);
 };
 

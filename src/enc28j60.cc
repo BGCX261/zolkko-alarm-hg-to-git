@@ -1,10 +1,8 @@
 /*
  * Network driver for ENC28J60 IC
- *
- * TODO: Use standard packet definitions
- * TODO: Use F_CPU independent delay implementation
  * 
  * Copyright (c) 2011 Alex Anisimov, <zolkko@gmail.com>
+ * GPLv3
  */
 #include <stdio.h>
 #include <avr/io.h>
@@ -15,9 +13,10 @@
 #include "net_driver.h"
 #include "enc28j60.h"
 
-/**
- * Initialize enc28j60 with mac address macaddr
- */
+
+#define ENC28J60_ETHER_HDR_LEN 14
+
+
 void enc28j60::init(const ether_addr_t& mac)
 {
     // At this point Spi module have to be initialized
@@ -109,10 +108,9 @@ void enc28j60::init(const ether_addr_t& mac)
     this->write_op(ENC28J60_BIT_FIELD_SET, ECON1, ECON1_RXEN);
 }
 
-/**
- * Performs soft reset.
- * The r(ESTAT) & ESTAT_CLKRDY does not work.
- * See Rev. B4 Silicon Errata point.
+/*
+ * TODO: replay _delay_ms call to call that takes current
+ * CPU freqency in account
  */
 void enc28j60::soft_reset(void)
 {
@@ -121,13 +119,10 @@ void enc28j60::soft_reset(void)
 	// Chip requires at least 1ms delay for stabilization.
 	_delay_ms(ENC28J60_MIN_RESET_DELAY); 
 	bank = 0;
-	
+    
 	// while (!(read(ESTAT) & ESTAT_CLKRDY)) ;
 }
 
-/*
- *
- */
 void enc28j60::write_op(uint8_t op, uint8_t address, uint8_t data)
 {
     _spi.select();
@@ -143,9 +138,6 @@ void enc28j60::write_op(uint8_t op, uint8_t address, uint8_t data)
     _spi.deselect();
 }
 
-/*
- *
- */
 uint8_t enc28j60::read_op(uint8_t op, uint8_t address)
 {
     _spi.select();
@@ -169,9 +161,6 @@ uint8_t enc28j60::read_op(uint8_t op, uint8_t address)
     return _spi.read();
 }
 
-/*
- *
- */
 void enc28j60::read_buffer(uint16_t len, uint8_t* data)
 {
     _spi.select();
@@ -196,9 +185,6 @@ void enc28j60::read_buffer(uint16_t len, uint8_t* data)
     _spi.deselect();
 }
 
-/*
- *
- */
 void enc28j60::write_buffer(uint16_t len, uint8_t* data)
 {
     _spi.select();
@@ -219,27 +205,18 @@ void enc28j60::write_buffer(uint16_t len, uint8_t* data)
     _spi.deselect();
 }
 
-/*
- * Read data from enc28j60 register
- */
 uint8_t enc28j60::read(uint8_t address)
 {
     this->set_bank(address);
     return this->read_op(ENC28J60_READ_CTRL_REG, address);
 }
 
-/*
- * Write data into enc28j60 register
- */
 void enc28j60::write(uint8_t address, uint8_t data)
 {
     this->set_bank(address);
     this->write_op(ENC28J60_WRITE_CTRL_REG, address, data);
 }
 
-/*
- *
- */
 void enc28j60::phy_write(uint8_t address, uint16_t data)
 {
     // set the PHY register address
@@ -255,9 +232,6 @@ void enc28j60::phy_write(uint8_t address, uint16_t data)
     }
 }
 
-/*
- *
- */
 uint16_t enc28j60::phy_read_h(uint8_t address)
 {
 	// Set the right address and start the register read operation
@@ -274,25 +248,44 @@ uint16_t enc28j60::phy_read_h(uint8_t address)
     return this->read(MIRDH);
 }
 
-void enc28j60::send(ether_frame_t& frame)
+void enc28j60::set_bank(uint8_t address)
 {
-    printf("\nENC28J60 send");
+    if ((address & BANK_MASK) != this->bank) {
+        this->write_op(ENC28J60_BIT_FIELD_CLR, ECON1, (ECON1_BSEL1|ECON1_BSEL0));
+        this->write_op(ENC28J60_BIT_FIELD_SET, ECON1, (address & BANK_MASK) >> 5);
+        this->bank = (address & BANK_MASK);
+    }
+}       
+
+void enc28j60::clkout(uint8_t clk)
+{
+    this->write(ECOCON, clk & 0x7);
 }
 
-ether_frame_t& enc28j60::receive(ether_frame_t& frame)
+uint8_t enc28j60::linkup(void)
 {
-    printf("\nENC28J60 receive");
-    return frame;
+    return this->phy_read_h(PHSTAT2) && 4;
 }
 
-/*
- *
- *
-void enc28j60::send_packet(uint16_t len, uint8_t * packet)
+uint8_t enc28j60::is_supported(void)
 {
-	printf("enc ");
-	_delay_ms(500);
-	
+    return read(EREVID) == ENC28J60_REV_B7;
+}
+
+uint8_t enc28j60::has_packet(void)
+{
+    if (this->read(EPKTCNT) == 0) {
+        return 0;
+    } else {
+        return 1;
+    }
+}
+
+uint8_t enc28j60::send(ether_frame_t& frame)
+{
+#ifdef UART_DEBUG
+    printf("Send network packet via ENC28J60 driver");
+#endif
     // Check no transmit in progress
     while (this->read_op(ENC28J60_READ_CTRL_REG, ECON1) & ECON1_TXRTS) {
         // Reset the transmit logic problem.
@@ -305,44 +298,56 @@ void enc28j60::send_packet(uint16_t len, uint8_t * packet)
     
 	// Set the write pointer to start of transmit buffer area
 	this->write(EWRPTL, TXSTART_INIT &  0xFF);
-    this->write(EWRPTH, TXSTART_INIT >> 8);
+    this->write(EWRPTH, TXSTART_INIT >> 8);    
     
-	// Set the TXND pointer to correspond to the packet size given
-	this->write(ETXNDL, (TXSTART_INIT + len) & 0xff);
-	this->write(ETXNDH, (TXSTART_INIT + len) >> 8);
-    
-	// write per-packet control byte (0x00 means use macon3 settings)
+	// Write per-packet control byte (0x00 means use macon3 settings)
     this->write_op(ENC28J60_WRITE_BUF_MEM, 0, 0x00);
     
-	// copy the packet into the transmit buffer
-    this->write_buffer(len, packet);
+    // Determine actual data to send without 
+    uint16_t data_len = n_to_uint16(frame.len_or_type);
+    if (data_len == ETHER_TYPE_ARP) {
+        data_len = sizeof(arp_hdr_t) + ENC28J60_ETHER_HDR_LEN;
+    } else if (data_len == ETHER_TYPE_IP) {
+        // TODO: calculate ip frame size
+        data_len = 100;
+    } else {
+        // payload length + ethernet header without preamble section
+        data_len = n_to_uint16(data_len) + ENC28J60_ETHER_HDR_LEN;
+    }
     
-	// send the contents of the transmit buffer onto the network
+	// Set the TXND pointer to correspond to the packet size given
+	this->write(ETXNDL, (TXSTART_INIT + data_len) & 0xff);
+	this->write(ETXNDH, (TXSTART_INIT + data_len) >> 8);
+    
+	// Copy the packet into the transmit buffer
+    this->write_buffer(data_len, (uint8_t*) &frame.dst_mac);
+    
+	// Send the contents of the transmit buffer onto the network
 	this->write_op(ENC28J60_BIT_FIELD_SET, ECON1, ECON1_TXRTS);
     
     // Reset the transmit logic problem.
     // See Rev. B4 Silicon Errata point 12.
     // if (this->read(EIR) & EIR_TXERIF) {
-    //      this->write_op(ENC28J60_BIT_FIELD_CLR, ECON1, ECON1_TXRTS);
+    //    this->write_op(ENC28J60_BIT_FIELD_CLR, ECON1, ECON1_TXRTS);
     // }
+    return 1;
 }
-*/
 
-/*
- *
- *
-uint16_t enc28j60::receive_packet(uint16_t maxlen, uint8_t* packet)
+uint8_t enc28j60::receive(ether_frame_t& frame)
 {
+#ifdef UART_DEBUG
+    printf("Receiving packet from ENC28J60.\n");
+#endif
+    
 	uint16_t rxstat;
 	uint16_t len;
     
 	// check if a packet has been received and buffered
-	// if( !(enc28j60Read(EIR) & EIR_PKTIF) ){
     // The above does not work. See Rev. B4 Silicon Errata point 6.
     if (this->read(EPKTCNT) == 0) {
         return 0;
     }
-
+    
 	// Set the read pointer to the start of the received packet
     this->write(ERDPTL, this->nextPacketPtr &  0xff);
 	this->write(ERDPTH, this->nextPacketPtr >> 8);
@@ -354,31 +359,32 @@ uint16_t enc28j60::receive_packet(uint16_t maxlen, uint8_t* packet)
 	// read the packet length (see datasheet page 43)
 	len  = this->read_op(ENC28J60_READ_BUF_MEM, 0);
 	len |= this->read_op(ENC28J60_READ_BUF_MEM, 0) << 8;
-    len -= 4; //remove the CRC count
+    
+    // Remove the CRC count
+    len -= 4;
     
 	// read the receive status (see datasheet page 43)
 	rxstat  = this->read_op(ENC28J60_READ_BUF_MEM, 0);
 	rxstat |= ((uint16_t)this->read_op(ENC28J60_READ_BUF_MEM, 0)) << 8;
     
 	// limit retrieve length
-    if (len > maxlen - 1) {
-        len = maxlen - 1;
+    if (len > (IF_PAYLOAD_MAX + ENC28J60_ETHER_HDR_LEN)) {
+        len = (IF_PAYLOAD_MAX + ENC28J60_ETHER_HDR_LEN);
     }
     
-    // check CRC and symbol errors (see datasheet page 44, table 7-3):
+    // Check CRC and symbol errors (see datasheet page 44, table 7-3):
     // The ERXFCON.CRCEN is set by default.
     // Normally we should not need to check this.
     if ((rxstat & 0x80) == 0) {
-        // invalid
         len = 0;
     } else {
         // copy the packet from the receive buffer
-        this->read_buffer(len, packet);
+        this->read_buffer(len, (uint8_t *)&frame.dst_mac);
     }
     
 	// Move the RX read pointer to the start of the next received packet
 	// This frees the memory we just read out
-    this->write(ERXRDPTL, this->nextPacketPtr & 0xFF);
+    this->write(ERXRDPTL, this->nextPacketPtr & 0xff);
     this->write(ERXRDPTH, this->nextPacketPtr >> 8);
     
     // Move the RX read pointer to the start of the next received packet
@@ -397,56 +403,7 @@ uint16_t enc28j60::receive_packet(uint16_t maxlen, uint8_t* packet)
     
 	// decrement the packet counter indicate we are done with this packet
     this->write_op(ENC28J60_BIT_FIELD_SET, ECON2, ECON2_PKTDEC);
+    
     return len;
-}
-*/
-
-/*
- * set the bank (if needed)
- */
-void enc28j60::set_bank(uint8_t address)
-{
-    if ((address & BANK_MASK) != this->bank) {
-        this->write_op(ENC28J60_BIT_FIELD_CLR, ECON1, (ECON1_BSEL1|ECON1_BSEL0));
-        this->write_op(ENC28J60_BIT_FIELD_SET, ECON1, (address & BANK_MASK) >> 5);
-        this->bank = (address & BANK_MASK);
-    }
-}       
-
-/*
- * Setup clock out
- * 2 is 12.5MHz
- */
-void enc28j60::clkout(uint8_t clk)
-{
-    this->write(ECOCON, clk & 0x7);
-}
-
-/*
- * Link status
- */
-uint8_t enc28j60::linkup(void)
-{
-    return this->phy_read_h(PHSTAT2) && 4;
-}
-
-/*
- * Only ENC28J60 Revision B7 IC is supported
- */
-uint8_t enc28j60::is_supported(void)
-{
-    return read(EREVID) == ENC28J60_REV_B7;
-}
-
-/*
- * Has packet for processing
- */
-uint8_t enc28j60::has_packet(void)
-{
-    if (this->read(EPKTCNT) == 0) {
-        return 0;
-    } else {
-        return 1;
-    }
 }
 

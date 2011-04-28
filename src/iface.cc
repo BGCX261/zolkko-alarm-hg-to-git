@@ -45,12 +45,12 @@ uint8_t iface::resolve_ip(const ip_addr_t& ip, ether_addr_t& mac)
     // _buf.start_of_frame = 0xab;
     set_mac(_buf.dst_mac, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff); // broad-cast address
     assign_mac(_buf.src_mac, _mac);
-    _buf.len_or_type = uint16_ton(ETHER_TYPE_ARP);
+    _buf.len_or_type = ETHER_TYPE_ARP;
     
     // ARP request
     arp_hdr_t& arp = (arp_hdr_t&) _buf.payload;
-    arp.hardware_type = uint16_ton(1);
-    arp.proto_type = uint16_ton(1);
+    arp.hardware_type = uint16_to_n(1);
+    arp.proto_type = uint16_to_n(1);
     arp.hlen = IF_ETHER_ADDR_LEN;
     arp.plen = IF_IP_ADDR_LEN;
     arp.operation = 1;
@@ -82,15 +82,11 @@ uint8_t iface::resolve_ip(const ip_addr_t& ip, ether_addr_t& mac)
         } while (!_driver.has_packet()) ;
         _driver.receive(_buf);
         
-        _buf.len_or_type = uint16_ton(_buf.len_or_type); // Invert network byte order
-        
         if (_buf.len_or_type == ETHER_TYPE_ARP) {
-            // TODO: Check IP address
             arp_hdr_t& arp_ans = (arp_hdr_t&) _buf.payload;
             
-            if (arp_ans.operation = 2 &&
-                equal_ip(arp_ans.dst_ip, _ip) &&
-                equal_ip(arp_ans.src_ip, ip))
+            if (arp_ans.operation = 2 && equal_ip(arp_ans.dst_ip, _ip) &&
+                    equal_ip(arp_ans.src_ip, ip))
             {
                 assign_mac(mac, arp_ans.src_mac);
 #ifdef UART_DEBUG
