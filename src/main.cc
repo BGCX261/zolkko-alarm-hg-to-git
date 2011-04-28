@@ -2,17 +2,23 @@
  * Smoke House Controlling device firmware main file
  *
  * Copyright (c) 2011 Alex Anisimov, <zolkko@gmail.com>
- * GPL v3
+ * GPLv3
  */
-#include <stdio.h>
+
+#define UART_DEBUG
 #include <avr/io.h>
 #include <util/delay.h>
+
+#ifdef UART_DEBUG
+#include <stdio.h>
 #include "uart_stdio.h"
+#endif
+
 #include "spi.h"
 #include "net.h"
-#include "iface.h"
+#include "net_driver.h"
 #include "enc28j60.h"
-#include "udp_service.h"
+#include "iface.h"
 
 
 /*
@@ -20,29 +26,31 @@
  */
 extern "C" void __cxa_pure_virtual()
 {
-	printf("FATAL: Failed to invoke pure virtual function");
+#ifdef UART_DEBUG
+	printf("FATAL: Failed to invoke pure virtual function.\n");
+#endif
 	do {} while (1) ;
 }
 
-// ACS Service ethernet and ip addresses
-// const ether_addr_t service_mac = {0x00, 0x1f, 0x5b, 0xeb, 0x7f, 0x75};
-// static ip_addr_t service_ip = {192, 168, 55, 1};
-
-// Device ethernet and ip addresses
+// Device ethernet addresses
 const static ether_addr_t device_mac = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06};
 
+// Device IP address
 const static ip_addr_t device_ip = {192, 168, 55, 2};
 
+// ACS Service IP address
+const static ip_addr_t service_ip = {192, 168, 55, 1};
 
 int main(void)
 {
 	// Stabilization. This line will help much on schematic SC errors.
 	_delay_ms(1000);
-	
+    
+#ifdef UART_DEBUG
 	uart_init();
-
-	printf("init ");
-	_delay_ms(500);
+	printf("UART debugging module has been initialized.\n");
+    _delay_ms(500);
+#endif
     
     // Initialize spi master driver for enc28j60 module
     spi spi(&SPIE,
@@ -50,24 +58,22 @@ int main(void)
             &PORTE, _BV(7),
             &PORTE, _BV(5),
             &PORTE, &(PORTE.PIN4CTRL), _BV(4));
-	    
-    enc28j60 iface(spi, device_mac, device_ip);
-	
-    if (!iface.is_supported()) {
-		printf("FATAL: Unsupported ENC28J60 device.\n");
-		do { } while (true);
+    
+    enc28j60 drv(spi);
+    if (!drv.is_supported()) {
+#ifdef UART_DEBUG
+        printf("Unable to find ENC28J60 IC connected.\n");
+#endif
+        do {} while (true) ;
     }
     
-    iface.init();
-	
-    udp_service udp(iface);
-	
-	do {
-		printf("main ");
-		udp.send_to(NULL, NULL, 8081, NULL, 0);
-		_delay_ms(1000);
-	} while (true) ;
-	
+    iface netif(drv, device_mac, device_ip);
+    netif.init();
+    
+    do {
+        // Main loop
+    } while (true) ;
+
 	return 0;
 }
 

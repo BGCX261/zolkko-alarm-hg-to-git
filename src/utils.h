@@ -1,17 +1,15 @@
-/**
- * (C) copyright Alex Anisimov <zolkko@gmail.com>
+/*
+ * Utility functions.
+ *
+ * Copyright (c) 2011 Alex Anisimov, <zolkko@gmail.com>
  * GPL v3
  */
 #ifndef _UTILS_H_
 #define _UTILS_H_
 
-#include <util/delay.h>
-#include <util/delay_basic.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 
 /*
  * Returns CPU freq according to current
@@ -20,28 +18,14 @@ extern "C" {
 extern uint32_t get_cpu_freq(void);
 
 /*
- * Delay for ms.
- * This function takes into account the CPU freqency.
+ * Calculate CRC32 for IP header
+ *
+ * len - proto data length + proto header len
+ *
+ * type == 1 - for TCP packets
+ * type == 2 - for UDP packets
  */
-
-/*
-extern inline void xdelay_ms(uint16_t ms)
-{
-    _delay_ms(ms);
-}
-*/
-
-/*
- * Delay for us.
- * This function takes into account the CPU freqency.
- */
-
-/*
-extern inline void xdelay_us(uint8_t us)
-{
-    _delay_us(us);
-}
-*/
+extern uint16_t checksum(uint8_t * buf, uint16_t len, uint8_t type);
 
 #ifdef __cplusplus
 }

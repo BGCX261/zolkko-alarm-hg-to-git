@@ -1,11 +1,12 @@
 /*
- * Iface interface implementation for enc28j60 IC.
+ * net_driver implementation for enc28j60 IC.
  * This driver does not support INT and RST pins and
- * Test on enc28j60-b7 IC revision.
+ * tested on enc28j60-b7 IC revision.
+ * 
  * Based on avr-uip code.
  *
  * Copyright (c) 2011 Alex Anisimov, <zolkko@gmail.com>
- * GPL v3
+ * GPLv3
  */
 #ifndef _enc28j60_h_
 #define _enc28j60_h_
@@ -15,9 +16,9 @@
 // ENC28J60 Control Registers
 // Control register definitions are a combination of address,
 // bank number, and Ethernet/MAC/PHY indicator bits.
-// - Register address        (bits 0-4)
+// - Register address   (bits 0-4)
 // - Bank number        (bits 5-6)
-// - MAC/PHY indicator        (bit 7)
+// - MAC/PHY indicator  (bit 7)
 #define ADDR_MASK        0x1F
 #define BANK_MASK        0x60
 #define SPRD_MASK        0x80
@@ -270,11 +271,11 @@
 // (note: maximum ethernet frame length would be 1518)
 #define MAX_FRAMELEN    1500
 
-
+// Reset delay for INI9320 IC
 #define ENC28J60_MIN_RESET_DELAY 50
 
 
-class enc28j60 : public iface
+class enc28j60 : public net_driver
 {
     private:
         spi& _spi;
@@ -307,34 +308,24 @@ class enc28j60 : public iface
         
         uint16_t receive_packet(uint16_t maxlen, uint8_t* packet);
         
-        uint8_t getrev(void);
-        
-        uint8_t has_rx_pkt(void);
-        
         uint8_t linkup(void);
         
     public:
-        
-        enc28j60(spi& __spi, const ether_addr_t& macaddr, const ip_addr_t& ipaddr) :
-            iface(macaddr, ipaddr),
-            _spi(__spi)
+        enc28j60(spi& __spi) : net_driver(), _spi(__spi)
         {
             bank = 0;
             nextPacketPtr = 0;
-        }
+        } 
         
-        void init(void);
+        void init(const ether_addr_t& mac);
         
+        void send(ether_frame_t& frame);
         
-        void send_packet(uint16_t len, uint8_t * packet);
+        ether_frame_t& receive(ether_frame_t& frame);
         
-        /*
-         * Checks if selected chip is rev B7
-         */
-        uint8_t is_supported(void)
-        {
-            return read(EREVID) == ENC28J60_REV_B7;
-        }
+        uint8_t is_supported(void);
+        
+        uint8_t has_packet(void);
 };
 
 #endif

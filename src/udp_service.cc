@@ -2,7 +2,8 @@
 #include <avr/io.h>
 #include <string.h>
 #include <util/delay.h>
-#include "iface.h"
+#include "net.h"
+#include "net_driver.h"
 #include "udp_service.h"
 
 
@@ -11,10 +12,10 @@
  */
 void udp_service::make_eth(uint8_t * buf, const ether_addr_t * dst_addr)
 {
-    const ether_addr_t& src_addr = _iface.get_mac_addr();
+    /*const ether_addr_t& src_addr = _iface.get_mac_addr();
     
     memcpy(&buf[ETH_DST_MAC], dst_addr, IF_ETHER_ADDR_LEN);
-    memcpy(&buf[ETH_SRC_MAC], src_addr, IF_ETHER_ADDR_LEN);
+    memcpy(&buf[ETH_SRC_MAC], src_addr, IF_ETHER_ADDR_LEN);*/
 }
 
 /**
@@ -22,7 +23,7 @@ void udp_service::make_eth(uint8_t * buf, const ether_addr_t * dst_addr)
  */
 void udp_service::make_ip(uint8_t * buf, const ip_addr_t * dst_addr)
 {
-    const ip_addr_t& src_addr = _iface.get_ip_addr();
+    /*const ip_addr_t& src_addr = _iface.get_ip_addr();
     
     memcpy(&buf[IP_DST_P], dst_addr, IF_IP_ADDR_LEN);
     memcpy(&buf[IP_SRC_P], src_addr, IF_IP_ADDR_LEN);
@@ -38,12 +39,12 @@ void udp_service::make_ip(uint8_t * buf, const ip_addr_t * dst_addr)
     // calculate the checksum:
     uint16_t ck = udp_service::checksum(&buf[IP_P], IP_HEADER_LEN, 0);
     buf[IP_CHECKSUM_P] = ck >> 8;
-    buf[IP_CHECKSUM_P + 1] = ck & 0xff;
+    buf[IP_CHECKSUM_P + 1] = ck & 0xff;*/
 }
 
 uint8_t udp_service::is_arp_and_myip(uint8_t * buf, uint8_t len)
 {
-    if (len < 41) {
+    /*if (len < 41) {
         return 0;
     }
     
@@ -60,7 +61,7 @@ uint8_t udp_service::is_arp_and_myip(uint8_t * buf, uint8_t len)
         if (buf[ETH_ARP_DST_IP_P + i] != src_addr[i]) return 0;
         i++;
     }
-    
+    */
     return 1;
 }
 
@@ -71,7 +72,7 @@ uint8_t udp_service::is_arp_and_myip(uint8_t * buf, uint8_t len)
 uint8_t udp_service::is_ip_and_myip(uint8_t * buf, uint8_t len)
 {
     //eth + ip + udp header is 42
-    if (len < 42) {
+   /* if (len < 42) {
         return 0;
     }
     
@@ -88,13 +89,13 @@ uint8_t udp_service::is_ip_and_myip(uint8_t * buf, uint8_t len)
         }
         i++;
     }
-    
+    */
     return 1;
 }
 
 void udp_service::arp_answer_from_request(uint8_t * buf, uint8_t len)
 {
-    uint8_t * addr_ptr = (uint8_t *) &buf[ETH_SRC_MAC];
+    /*uint8_t * addr_ptr = (uint8_t *) &buf[ETH_SRC_MAC];
     this->make_eth(buf, (ether_addr_t *) &addr_ptr);
     
     buf[ETH_ARP_OPCODE_H_P] = ETH_ARP_OPCODE_REPLY_H_V;
@@ -112,7 +113,7 @@ void udp_service::arp_answer_from_request(uint8_t * buf, uint8_t len)
     memcpy(&buf[ETH_ARP_SRC_IP_P], src_ip, IF_IP_ADDR_LEN);
     
     // eth + arp is 42 bytes:
-    _iface.send_packet(42, buf);
+    _iface.send_packet(42, buf);*/
 }
 
 /**
@@ -120,7 +121,7 @@ void udp_service::arp_answer_from_request(uint8_t * buf, uint8_t len)
  */
 void udp_service::echo_reply_from_request(uint8_t * buf, uint8_t len)
 {
-    uint8_t * mac_ptr = (uint8_t *) &buf[ETH_SRC_MAC];
+    /*uint8_t * mac_ptr = (uint8_t *) &buf[ETH_SRC_MAC];
     this->make_eth(buf, (ether_addr_t *)&mac_ptr);
     
     uint8_t * ip_ptr = (uint8_t *) &buf[IP_SRC_P];
@@ -135,7 +136,7 @@ void udp_service::echo_reply_from_request(uint8_t * buf, uint8_t len)
     }
     buf[ICMP_CHECKSUM_P] += 0x08;
     
-    _iface.send_packet(len, buf);
+    _iface.send_packet(len, buf);*/
 }
 
 /**
@@ -146,7 +147,7 @@ void udp_service::echo_reply_from_request(uint8_t * buf, uint8_t len)
  */
 void udp_service::reply_from_request(uint8_t * buf, char * data, uint8_t datalen, uint16_t port)
 {
-    uint8_t i = 0;
+    /*uint8_t i = 0;
     
     uint8_t * mac_ptr = (uint8_t *) &buf[ETH_SRC_MAC];
     this->make_eth(buf, (ether_addr_t *) &mac_ptr);
@@ -189,7 +190,7 @@ void udp_service::reply_from_request(uint8_t * buf, char * data, uint8_t datalen
     buf[UDP_CHECKSUM_H_P] = ck >> 8;
     buf[UDP_CHECKSUM_L_P] = ck & 0xff;
     
-    _iface.send_packet(UDP_HEADER_LEN + IP_HEADER_LEN + ETH_HEADER_LEN + datalen, buf);
+    _iface.send_packet(UDP_HEADER_LEN + IP_HEADER_LEN + ETH_HEADER_LEN + datalen, buf);*/
 }
 
 /**
@@ -233,7 +234,8 @@ void udp_service::send_to(ether_addr_t * dst_mac, ip_addr_t * dst_ip, uint16_t d
 	printf("udp ");
 	_delay_ms(500);
 	
-	_iface.send_packet(0, NULL);
+	// _iface.send_packet(0, NULL);
+    
 	/*
     uint8_t buf[150];
         

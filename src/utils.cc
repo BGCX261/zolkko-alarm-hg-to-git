@@ -4,6 +4,7 @@
  */
 
 #include <avr/io.h>
+#include "net.h"
 #include "utils.h"
 
 
@@ -34,23 +35,32 @@ uint32_t get_cpu_freq(void)
     return clk;
 }
 
-inline void _delay_operations(uint32_t operations)
+uint16_t checksum(uint8_t * buf, uint16_t len, uint8_t type)
 {
-    uint32_t times = operations / 4;
+    uint32_t sum = 0;
     
-    if (times > 1) {
-        if (times > 0xffff) {
-            PORTD.OUTTGL = _BV(5);
-            while (times >= 0xffff) {
-                _delay_loop_2(0xffff);
-                times -= 0xffff;
-            }
-        }
-        
-        if (times != 0) {
-            PORTD.OUTTGL = _BV(6);
-            _delay_loop_2((uint16_t)(times & 0xffff));
-        }
+    if (type == 1) {
+        sum += IP_PROTO_UDP_V;
+        sum += len - 8; //  - udp length
+    } else if (type == 2) {
+        sum += IP_PROTO_TCP_V; 
+        sum += len - 8; // - tcp length
     }
+    
+    while (len > 1) {
+        sum += 0xffff & (*buf << 8 | *(buf + 1));
+        buf += 2;
+        len -= 2;
+    }
+    
+    if (len) {
+        sum += (0xff & *buf) << 8;
+    }
+    
+    while (sum >> 16) {
+        sum = (sum & 0xffff) + (sum >> 16);
+    }
+    
+    return ((uint16_t) sum ^ 0xffff);
 }
 

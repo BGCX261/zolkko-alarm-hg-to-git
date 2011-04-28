@@ -79,7 +79,7 @@
 class udp_service
 {
     private:
-        iface& _iface;
+        net_driver& _driver;
         
         void make_eth(uint8_t * buf, const ether_addr_t * dst_addr);
         
@@ -88,7 +88,7 @@ class udp_service
         static uint16_t checksum(uint8_t * buf, uint16_t len, uint8_t type);
         
     public:
-        udp_service(iface& __iface) : _iface(__iface)
+        udp_service(net_driver& __driver) : _driver(__driver)
         {
         }
         

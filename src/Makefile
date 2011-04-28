@@ -37,10 +37,12 @@ HEX_EEPROM_FLAGS += --change-section-lma .eeprom=0 --no-change-warnings
 ## Objects that must be built in order to link
 OBJECTS = $(BUILD_DIR)/main.o \
 		  $(BUILD_DIR)/uart_stdio.o \
+          $(BUILD_DIR)/net_driver.o \
 		  $(BUILD_DIR)/enc28j60.o \
 		  $(BUILD_DIR)/ili9320.o \
 		  $(BUILD_DIR)/spi.o \
 		  $(BUILD_DIR)/udp_service.o \
+          $(BUILD_DIR)/iface.o \
 		  $(BUILD_DIR)/utils.o 
 
 ## Objects explicitly added by the user

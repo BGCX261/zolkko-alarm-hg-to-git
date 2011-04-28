@@ -11,13 +11,14 @@
 #include <util/delay.h>
 #include <inttypes.h>
 #include "spi.h"
-#include "iface.h"
+#include "net.h"
+#include "net_driver.h"
 #include "enc28j60.h"
 
 /**
  * Initialize enc28j60 with mac address macaddr
  */
-void enc28j60::init(void)
+void enc28j60::init(const ether_addr_t& mac)
 {
     // At this point Spi module have to be initialized
     soft_reset();
@@ -88,12 +89,12 @@ void enc28j60::init(void)
     
     // write mac address
     // mac address is byte-backward
-    this->write(MAADR5, _macaddr[0]);
-    this->write(MAADR4, _macaddr[1]);
-    this->write(MAADR3, _macaddr[2]);
-    this->write(MAADR2, _macaddr[3]);
-    this->write(MAADR1, _macaddr[4]);
-    this->write(MAADR0, _macaddr[5]);
+    this->write(MAADR5, mac[0]);
+    this->write(MAADR4, mac[1]);
+    this->write(MAADR3, mac[2]);
+    this->write(MAADR2, mac[3]);
+    this->write(MAADR1, mac[4]);
+    this->write(MAADR0, mac[5]);
     
 	// no loopback of transmitted frames
 	this->phy_write(PHCON2, PHCON2_HDLDIS);
@@ -273,14 +274,25 @@ uint16_t enc28j60::phy_read_h(uint8_t address)
     return this->read(MIRDH);
 }
 
+void enc28j60::send(ether_frame_t& frame)
+{
+    printf("\nENC28J60 send");
+}
+
+ether_frame_t& enc28j60::receive(ether_frame_t& frame)
+{
+    printf("\nENC28J60 receive");
+    return frame;
+}
+
 /*
  *
- */
+ *
 void enc28j60::send_packet(uint16_t len, uint8_t * packet)
 {
 	printf("enc ");
 	_delay_ms(500);
-	/*
+	
     // Check no transmit in progress
     while (this->read_op(ENC28J60_READ_CTRL_REG, ECON1) & ECON1_TXRTS) {
         // Reset the transmit logic problem.
@@ -313,12 +325,12 @@ void enc28j60::send_packet(uint16_t len, uint8_t * packet)
     // if (this->read(EIR) & EIR_TXERIF) {
     //      this->write_op(ENC28J60_BIT_FIELD_CLR, ECON1, ECON1_TXRTS);
     // }
-	*/
 }
+*/
 
 /*
  *
- */
+ *
 uint16_t enc28j60::receive_packet(uint16_t maxlen, uint8_t* packet)
 {
 	uint16_t rxstat;
@@ -387,6 +399,7 @@ uint16_t enc28j60::receive_packet(uint16_t maxlen, uint8_t* packet)
     this->write_op(ENC28J60_BIT_FIELD_SET, ECON2, ECON2_PKTDEC);
     return len;
 }
+*/
 
 /*
  * set the bank (if needed)
@@ -410,9 +423,25 @@ void enc28j60::clkout(uint8_t clk)
 }
 
 /*
- * Has RX packet
+ * Link status
  */
-uint8_t enc28j60::has_rx_pkt(void)
+uint8_t enc28j60::linkup(void)
+{
+    return this->phy_read_h(PHSTAT2) && 4;
+}
+
+/*
+ * Only ENC28J60 Revision B7 IC is supported
+ */
+uint8_t enc28j60::is_supported(void)
+{
+    return read(EREVID) == ENC28J60_REV_B7;
+}
+
+/*
+ * Has packet for processing
+ */
+uint8_t enc28j60::has_packet(void)
 {
     if (this->read(EPKTCNT) == 0) {
         return 0;
@@ -421,10 +450,3 @@ uint8_t enc28j60::has_rx_pkt(void)
     }
 }
 
-/*
- * Link status
- */
-uint8_t enc28j60::linkup(void)
-{
-    return this->phy_read_h(PHSTAT2) && 4;
-}

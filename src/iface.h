@@ -1,54 +1,39 @@
-/**
- * (c) copyright Alex Aisimov <zolkko@gmail.com>
- * GPL v3
+/*
+ * Network point interface.
  *
- * Abstract inet interface
- * Concrete driver should implement this
+ * Copyright (c) 2011 Alex Aisimov, <zolkko@gmail.com>
+ * GPLv3
  */
 #ifndef _IFACE_H_
 #define _IFACE_H_
 
-#include <inttypes.h>
-#include <string.h>
-#include "net.h"
-
-
 class iface
 {
-    protected:
-        const ether_addr_t& _macaddr;
+    private:
+        net_driver& _driver;
+        
+        ether_frame_t _buf;
+        
+        const ether_addr_t& _mac;
         
         const ip_addr_t& _ip;
-        
+    
     public:
-        iface (const ether_addr_t& __macaddr, const ip_addr_t& __ip) :
-			_macaddr(__macaddr),
-			_ip(__ip)
+        iface (net_driver& __driver,
+               const ether_addr_t& __mac,
+               const ip_addr_t& __ip) :
+            _driver(__driver),
+            _mac(__mac),
+            _ip(__ip)
         {
         }
-
-        virtual void init(void) = 0;
         
-        /**
-         * Returns interface mac address
-         */
-        const ether_addr_t& get_mac_addr(void)
-        {
-            return _macaddr;
-        }
+        void init(void);
         
-        /**
-         * Returns interface ip address
+        /*
+         * Method resolve MAC address by IP address
          */
-        const ip_addr_t& get_ip_addr(void)
-        {
-            return _ip;
-        }
-        
-        /**
-         * Send network packet via interface
-         */
-        virtual void send_packet(uint16_t len, uint8_t * packet) = 0;
+        uint8_t resolve_ip(const ip_addr_t& ip, ether_addr_t& mac);
 };
 
 #endif

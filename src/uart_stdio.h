@@ -10,7 +10,7 @@
 
 
 #ifndef UART_DEV
-#define UART_DEV     USARTD0
+#define UART_DEV USARTD0
 #endif
 
 #ifndef UART_TX_PORT
@@ -18,7 +18,7 @@
 #endif
 
 #ifndef UART_TX_PIN
-#define UART_TX_PIN  3
+#define UART_TX_PIN 3
 #endif
 
 #ifdef __cplusplus
