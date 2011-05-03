@@ -6,6 +6,7 @@
  */
 
 #define UART_DEBUG
+
 #include <avr/io.h>
 #include <util/delay.h>
 
@@ -38,8 +39,12 @@ const static ether_addr_t device_mac = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06};
 // Device IP address
 const static ip_addr_t device_ip = {192, 168, 55, 2};
 
+// Service mac address
+static ether_addr_t service_mac = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
 // ACS Service IP address
 const static ip_addr_t service_ip = {192, 168, 55, 1};
+
 
 int main(void)
 {
@@ -49,7 +54,6 @@ int main(void)
 #ifdef UART_DEBUG
 	uart_init();
 	printf("UART debugging module has been initialized.\n");
-    _delay_ms(500);
 #endif
     
     // Initialize spi master driver for enc28j60 module
@@ -65,15 +69,27 @@ int main(void)
         printf("Unable to find ENC28J60 IC connected.\n");
 #endif
         do {} while (true) ;
+        
+        return 0;
     }
     
     iface netif(drv, device_mac, device_ip);
     netif.init();
     
+    if (!netif.resolve_ip(service_ip, service_mac)) {
+#ifdef UART_DEBUG
+        printf("Failed to resolve ACS Service.\n");
+#endif
+        do { } while (true) ;
+        
+        return 0;
+    }
+    
     do {
+        // TODO: Get current status, send current status
         // Main loop
     } while (true) ;
-
+    
 	return 0;
 }
 

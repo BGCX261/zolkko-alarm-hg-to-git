@@ -36,6 +36,7 @@ HEX_EEPROM_FLAGS += --change-section-lma .eeprom=0 --no-change-warnings
 
 ## Objects that must be built in order to link
 OBJECTS = $(BUILD_DIR)/main.o \
+          $(BUILD_DIR)/application.o \
 		  $(BUILD_DIR)/uart_stdio.o \
           $(BUILD_DIR)/net_driver.o \
 		  $(BUILD_DIR)/enc28j60.o \
