@@ -1,7 +1,9 @@
-Smoke House Controlling device firmware source code.
+The SmokeHouseCTRL Firmware source code.
 
-Run "make all" command to create HEX file.
-Make script puts all ouput files into "build/" subdirectory.
+Run "make all" command to generate HEX file.
+
+Make script puts all generated files into "build/" subdirectory.
 You have to ensure this subdirectory exists before running make file.
 
 Tested on avr-gcc 4.3.3.
+
