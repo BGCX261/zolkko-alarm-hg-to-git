@@ -80,6 +80,11 @@ typedef struct _arp_hdr_t {
     ip_addr_t dst_ip;
 } arp_hdr_t;
 
+
+#define ARP_HARDWARE_TYPE_ETHERNET 0x0001
+
+#define ARP_PROTO_TYPE_ARP_IPV4    0x0800
+
 /*
  * IP Header
  */

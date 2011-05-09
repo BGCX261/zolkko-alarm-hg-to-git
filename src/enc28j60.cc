@@ -4,6 +4,14 @@
  * Copyright (c) 2011 Alex Anisimov, <zolkko@gmail.com>
  * GPLv3
  */
+
+#define UART_DEBUG 1
+
+#ifdef UART_DEBUG
+#include <stdio.h>
+#include "uart_stdio.h"
+#endif
+
 #include <stdio.h>
 #include <avr/io.h>
 #include <util/delay.h>
@@ -281,10 +289,13 @@ uint8_t enc28j60::has_packet(void)
     }
 }
 
+/*
+ * Sends data though the driver network buffer
+ */
 uint8_t enc28j60::send(ether_frame_t& frame)
 {
 #ifdef UART_DEBUG
-    printf("Send network packet via ENC28J60 driver");
+    printf("Send network packet via ENC28J60 driver.\r\n");
 #endif
     // Check no transmit in progress
     while (this->read_op(ENC28J60_READ_CTRL_REG, ECON1) & ECON1_TXRTS) {
@@ -304,11 +315,11 @@ uint8_t enc28j60::send(ether_frame_t& frame)
     this->write_op(ENC28J60_WRITE_BUF_MEM, 0, 0x00);
     
     // Determine actual data to send without 
-    uint16_t data_len = n_to_uint16(frame.len_or_type);
+    uint16_t data_len = frame.len_or_type;
+	
     if (data_len == ETHER_TYPE_ARP) {
         data_len = sizeof(arp_hdr_t) + ENC28J60_ETHER_HDR_LEN;
     } else if (data_len == ETHER_TYPE_IP) {
-        // TODO: calculate ip frame size
         data_len = 100;
     } else {
         // payload length + ethernet header without preamble section
@@ -320,6 +331,9 @@ uint8_t enc28j60::send(ether_frame_t& frame)
 	this->write(ETXNDH, (TXSTART_INIT + data_len) >> 8);
     
 	// Copy the packet into the transmit buffer
+#ifdef UART_DEBUG
+	printf("Writing data (count %u) into enc28j60 buffer.\r\n", data_len);
+#endif
     this->write_buffer(data_len, (uint8_t*) &frame.dst_mac);
     
 	// Send the contents of the transmit buffer onto the network

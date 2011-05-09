@@ -5,7 +5,7 @@
  * GPLv3
  */
 
-#define UART_DEBUG
+#define UART_DEBUG 1
 
 #include <avr/io.h>
 #include <util/delay.h>
@@ -50,11 +50,11 @@ int main(void)
 {
 	// Stabilization. This line will help much on schematic SC errors.
 	_delay_ms(1000);
-    
-#ifdef UART_DEBUG
+	
+// #ifdef UART_DEBUG
 	uart_init();
-	printf("UART debugging module has been initialized.\n");
-#endif
+	printf("UART debugging module has been initialized.\r\n");
+// #endif
     
     // Initialize spi master driver for enc28j60 module
     spi spi(&SPIE,
@@ -66,30 +66,48 @@ int main(void)
     enc28j60 drv(spi);
     if (!drv.is_supported()) {
 #ifdef UART_DEBUG
-        printf("Unable to find ENC28J60 IC connected.\n");
+        printf("Unable to find ENC28J60 IC connected.\r\n");
 #endif
         do {} while (true) ;
         
         return 0;
     }
+#ifdef UART_DEBUG
+	else {
+		printf("ENC28J60 Revision B7 chip found.\r\n");
+	}
+#endif
     
     iface netif(drv, device_mac, device_ip);
     netif.init();
-    
-    if (!netif.resolve_ip(service_ip, service_mac)) {
+	
 #ifdef UART_DEBUG
-        printf("Failed to resolve ACS Service.\n");
+	printf("Resolving ACS Service IP address...\t");
 #endif
-        do { } while (true) ;
-        
-        return 0;
-    }
+    
+	while (true) {
+		if (!netif.resolve_ip(service_ip, service_mac)) {
+#ifdef UART_DEBUG
+			printf("Failed to resolve ACS Service.\r\n");
+#endif
+			// do { } while (true) ;
+			// return 0;
+			_delay_ms(10000);
+			printf("------------------\r\n\r\n");
+		}
+#ifdef UART_DEBUG
+		else {
+			printf("ACS Service IP resolved.\r\n");
+		}
+#endif
+	}
     
     do {
-        // TODO: Get current status, send current status
-        // Main loop
+#ifdef UART_DEBUG
+		printf("Main loop iteration.\r\n");
+#endif
     } while (true) ;
-    
+	
 	return 0;
 }
 

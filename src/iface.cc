@@ -5,6 +5,8 @@
  * GPLv3
  */
 
+#define UART_DEBUG 1
+
 #ifdef UART_DEBUG
 #include <stdio.h>
 #include "uart_stdio.h"
@@ -28,32 +30,33 @@ void iface::init(void)
 uint8_t iface::resolve_ip(const ip_addr_t& ip, ether_addr_t& mac)
 {
 #ifdef UART_DEBUG
-    printf("Resolving IP address %d.%d.%d.%d\n", ip[0], ip[1], ip[2], ip[3]);
+    printf("Resolving IP address %d.%d.%d.%d.\r\n", ip[0], ip[1], ip[2], ip[3]);
 #endif
     
 #ifdef DEBUG
     memset(&_buf, 0, sizeof(ether_frame_t));
 #endif
     // Network driver have to set preable itself.
-    // _buf.preamble[0] = 0xaa;
-    // _buf.preamble[1] = 0xaa;
-    // _buf.preamble[2] = 0xaa;
-    // _buf.preamble[3] = 0xaa;
-    // _buf.preamble[4] = 0xaa;
-    // _buf.preamble[5] = 0xaa;
-    // _buf.preamble[6] = 0xaa;
-    // _buf.start_of_frame = 0xab;
+	_buf.preamble[0] = 0xaa;
+	_buf.preamble[1] = 0xaa;
+	_buf.preamble[2] = 0xaa;
+	_buf.preamble[3] = 0xaa;
+	_buf.preamble[4] = 0xaa;
+	_buf.preamble[5] = 0xaa;
+	_buf.preamble[6] = 0xaa;
+	_buf.start_of_frame = 0xab;
+	
     set_mac(_buf.dst_mac, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff); // broad-cast address
     assign_mac(_buf.src_mac, _mac);
     _buf.len_or_type = ETHER_TYPE_ARP;
     
     // ARP request
     arp_hdr_t& arp = (arp_hdr_t&) _buf.payload;
-    arp.hardware_type = uint16_to_n(1);
-    arp.proto_type = uint16_to_n(1);
+    arp.hardware_type = uint16_to_n(ARP_HARDWARE_TYPE_ETHERNET);
+    arp.proto_type = uint16_to_n(ARP_PROTO_TYPE_ARP_IPV4);
     arp.hlen = IF_ETHER_ADDR_LEN;
     arp.plen = IF_IP_ADDR_LEN;
-    arp.operation = 1;
+    arp.operation = uint16_to_n(1);
     assign_mac(arp.src_mac, _mac);
     assign_ip(arp.src_ip, _ip);
     set_mac(arp.dst_mac, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff); // broad-cast address
@@ -65,21 +68,35 @@ uint8_t iface::resolve_ip(const ip_addr_t& ip, ether_addr_t& mac)
     _buf.payload[sizeof(arp_hdr_t) + 1] = 0x00;
     _buf.payload[sizeof(arp_hdr_t) + 2] = 0x00;
     _buf.payload[sizeof(arp_hdr_t) + 3] = 0x00;
-    
-    _driver.send(_buf);
+	
+#ifdef UART_DEBUG
+	printf("Sending data through the enc28j60 driver.\r\n");
+#endif    
+	_driver.send(_buf);
+	
+#ifdef UART_DEBUG
+	printf("Data sended through the port using enc28j60 driver.\r\n");
+#endif
     
     // Receive will wait until an answer packet.
     // We do not have receiving big receiving buffer for later processing,
     // so just skip wrong packets.
     
-    // TODO: add timeout
+    /*
     do {
-#ifdef DEBUG
-        memset(&_buf, 0, sizeof(ether_frame_t));
-#endif
+// #ifdef DEBUG
+//        memset(&_buf, 0, sizeof(ether_frame_t));
+// #endif
         do {
+#ifdef UART_DEBUG
+			printf("Check for received data through the enc28j60 driver.\r\n");
+#endif
             _delay_ms(NET_DRIVER_RECEIVE_TIMEOUT);
         } while (!_driver.has_packet()) ;
+		
+#ifdef UART_DEBUG
+		printf("Data received. Reading enc28j60 driver buffer.\r\n");
+#endif
         _driver.receive(_buf);
         
         if (_buf.len_or_type == ETHER_TYPE_ARP) {
@@ -96,7 +113,8 @@ uint8_t iface::resolve_ip(const ip_addr_t& ip, ether_addr_t& mac)
             }
         }
     } while (true);
-    
+    */
+	
     return false;
 }
 

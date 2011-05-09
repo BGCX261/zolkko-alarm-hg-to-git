@@ -7,7 +7,7 @@
 #define _net_driver_h_
 
 #ifndef NET_DRIVER_RECEIVE_TIMEOUT
-#define NET_DRIVER_RECEIVE_TIMEOUT 20
+#define NET_DRIVER_RECEIVE_TIMEOUT 10000
 #endif
 
 class net_driver
