@@ -41,7 +41,7 @@ uint16_t checksum(uint8_t * buf, uint16_t len, uint8_t type)
     
     if (type == 1) {
         sum += IP_PROTO_UDP_V;
-        sum += len - 8; //  - udp length
+        sum += len - UDP_HDR_LEN; // - udp length
     } else if (type == 2) {
         sum += IP_PROTO_TCP_V; 
         sum += len - 8; // - tcp length

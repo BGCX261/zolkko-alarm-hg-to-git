@@ -47,7 +47,8 @@ typedef uint8_t ip_addr_t[IF_IP_ADDR_LEN];
  * Statically allocate
  */
 
-#define IF_PAYLOAD_MAX 200
+ // 576 byte minimum IP packet size + 16 byte ether header size + 4byte CRC size
+#define IF_PAYLOAD_MAX 600
 
 typedef struct _ether_frame_t {
     uint8_t preamble[7];
@@ -62,8 +63,8 @@ typedef struct _ether_frame_t {
 /*
  * Ethernet packet types
  */
-#define ETHER_TYPE_ARP 0x0608
-#define ETHER_TYPE_IP  0x0080
+#define ETHER_TYPE_ARP 0x0608 // Network byte order
+#define ETHER_TYPE_IP  0x0008 // Network byte order
 
 /*
  * ARP request header
@@ -85,12 +86,17 @@ typedef struct _arp_hdr_t {
 
 #define ARP_PROTO_TYPE_ARP_IPV4    0x0800
 
+#define ARP_OPERATION_ACK   0x0001
+
+#define ARP_OPERATION_ANS   0x0002
+
 /*
  * IP Header
  */
 
-typedef struct _ip_hdr
-{
+#define IP_HDR_LEN 20 
+
+typedef struct _ip_hdr_t {
     uint8_t   version_len;
     uint8_t   tos; // type of service
     uint16_t  len;
@@ -98,29 +104,32 @@ typedef struct _ip_hdr
     uint16_t  offset; // High Byte: Reserved(15) Dont Fragment(14), More fragments(13)
     uint8_t   ttl;
     uint8_t   proto;
-    uint16_t  sum;
+    uint16_t  hdr_crc;
     ip_addr_t src_addr;
     ip_addr_t dst_addr;
-} ip_hdr;
+	uint8_t   data[IF_PAYLOAD_MAX - IP_HDR_LEN]; // TODO: data block should be 576 bytes or greater.
+} ip_hdr_t;
 
 /*
  * IP protocol version
  */
 #define IP_PROTO_ICMP_V 1
 #define IP_PROTO_TCP_V 6
-#define IP_PROTO_UDP_V 17
+#define IP_PROTO_UDP_V 0x11
 
 
 /*
  * UDP protocol header
  */
-typedef struct _udp_hdr
-{
+#define UDP_HDR_LEN 8
+
+typedef struct _udp_hdr_t {
     uint16_t src_port;
     uint16_t dst_port;
     uint16_t ulen;
-    uint16_t sum;
-} udp_hdr;
+    uint16_t crc;
+	uint8_t  data[IF_PAYLOAD_MAX - IP_HDR_LEN - UDP_HDR_LEN];
+} udp_hdr_t;
 
 #endif
 

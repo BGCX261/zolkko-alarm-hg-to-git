@@ -51,10 +51,10 @@ int main(void)
 	// Stabilization. This line will help much on schematic SC errors.
 	_delay_ms(1000);
 	
-// #ifdef UART_DEBUG
+#ifdef UART_DEBUG
 	uart_init();
-	printf("UART debugging module has been initialized.\r\n");
-// #endif
+	printf("\r\n\r\n=================================\r\nUART debugging module has been initialized.\r\n=================================\r\n");
+#endif
     
     // Initialize spi master driver for enc28j60 module
     spi spi(&SPIE,
@@ -81,33 +81,57 @@ int main(void)
     iface netif(drv, device_mac, device_ip);
     netif.init();
 	
+	do {
 #ifdef UART_DEBUG
-	printf("Resolving ACS Service IP address...\t");
+		printf("Resolving ACS Service IP address.\r\n");
 #endif
-    
-	while (true) {
-		if (!netif.resolve_ip(service_ip, service_mac)) {
+		if (netif.resolve_ip(service_ip, service_mac)) {
 #ifdef UART_DEBUG
-			printf("Failed to resolve ACS Service.\r\n");
+			printf("ACS Service IP resolved.\r\n");
 #endif
-			// do { } while (true) ;
-			// return 0;
-			_delay_ms(10000);
-			printf("------------------\r\n\r\n");
+			break;
 		}
 #ifdef UART_DEBUG
 		else {
-			printf("ACS Service IP resolved.\r\n");
+			printf("Failed to resolve ACS Service ethernet address.\r\n");
 		}
 #endif
-	}
-    
-    do {
+	} while (true) ;
+	
+	uint8_t udp_packet_data[11];
+	udp_packet_data[0] = 'H';
+	udp_packet_data[1] = 'e';
+	udp_packet_data[2] = 'l';
+	udp_packet_data[3] = 'l';
+	udp_packet_data[4] = 'o';
+	udp_packet_data[5] = 'w';
+	udp_packet_data[6] = ' ';
+	udp_packet_data[7] = 'a';
+	udp_packet_data[8] = 'l';
+	udp_packet_data[9] = 'l';
+	udp_packet_data[10] = '!';
+	
 #ifdef UART_DEBUG
-		printf("Main loop iteration.\r\n");
+	printf("Sending UDP datagramm.\r\n");
 #endif
+	if (netif.send_udp(service_mac, service_ip, 9091, 9092, (uint8_t *) udp_packet_data, 11)) {
+#ifdef UART_DEBUG
+		printf("UDP datagramm has sended.\r\n");
+#endif
+	}
+#ifdef UART_DEBUG
+	else {
+		printf("Failed to send UDP datagramm.\r\n");
+	}
+#endif
+	
+#ifdef UART_DEBUG
+	printf("Entering into main loop.\r\n");
+#endif
+	
+    do {
+		// TODO: main loop
     } while (true) ;
 	
 	return 0;
 }
-

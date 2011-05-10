@@ -195,6 +195,9 @@ void enc28j60::read_buffer(uint16_t len, uint8_t* data)
 
 void enc28j60::write_buffer(uint16_t len, uint8_t* data)
 {
+#ifdef UART_DEBUG
+	printf("-- [ENC Write BUFFER ] ------\r\n");
+#endif
     _spi.select();
     
     // issue write command
@@ -203,6 +206,10 @@ void enc28j60::write_buffer(uint16_t len, uint8_t* data)
     
     while (len) {
         len--;
+		
+#ifdef UART_DEBUG
+		printf("0x%x ", *data);
+#endif
         
         // write data
         _spi.write(*data);
@@ -211,6 +218,9 @@ void enc28j60::write_buffer(uint16_t len, uint8_t* data)
         _spi.wait();
     }
     _spi.deselect();
+#ifdef UART_DEBUG
+	printf("\r\n-----------------------------\r\n");
+#endif
 }
 
 uint8_t enc28j60::read(uint8_t address)
@@ -318,13 +328,29 @@ uint8_t enc28j60::send(ether_frame_t& frame)
     uint16_t data_len = frame.len_or_type;
 	
     if (data_len == ETHER_TYPE_ARP) {
+#ifdef UART_DEBUG
+		printf("Sending ETHERNET II arp-packet.\r\n");
+#endif
         data_len = sizeof(arp_hdr_t) + ENC28J60_ETHER_HDR_LEN;
     } else if (data_len == ETHER_TYPE_IP) {
-        data_len = 100;
+#ifdef UART_DEBUG
+		printf("Sending ETHERNET II ip-packet.\r\n");
+#endif
+		ip_hdr_t& ip_hdr = (ip_hdr_t&) frame.payload;
+#ifdef UART_DEBUG
+		printf("IP packet total length: %u.\r\n", n_to_uint16(ip_hdr.len));
+#endif
+        data_len = n_to_uint16(ip_hdr.len) + ENC28J60_ETHER_HDR_LEN;
     } else {
+#ifdef UART_DEBUG
+		printf("Sending IEEE 802.3 Ethernet frame. Payload length: %d.\r\n", n_to_uint16(data_len));
+#endif
         // payload length + ethernet header without preamble section
         data_len = n_to_uint16(data_len) + ENC28J60_ETHER_HDR_LEN;
     }
+#ifdef UART_DEBUG
+		printf("ENC28J60_ETHER_HDR_LEN %u.\r\n", data_len);
+#endif
     
 	// Set the TXND pointer to correspond to the packet size given
 	this->write(ETXNDL, (TXSTART_INIT + data_len) & 0xff);
@@ -335,6 +361,9 @@ uint8_t enc28j60::send(ether_frame_t& frame)
 	printf("Writing data (count %u) into enc28j60 buffer.\r\n", data_len);
 #endif
     this->write_buffer(data_len, (uint8_t*) &frame.dst_mac);
+#ifdef UART_DEBUG
+	printf("Data has written into enc28j60.\r\n", data_len);
+#endif
     
 	// Send the contents of the transmit buffer onto the network
 	this->write_op(ENC28J60_BIT_FIELD_SET, ECON1, ECON1_TXRTS);
@@ -344,13 +373,13 @@ uint8_t enc28j60::send(ether_frame_t& frame)
     // if (this->read(EIR) & EIR_TXERIF) {
     //    this->write_op(ENC28J60_BIT_FIELD_CLR, ECON1, ECON1_TXRTS);
     // }
-    return 1;
+    return true;
 }
 
 uint8_t enc28j60::receive(ether_frame_t& frame)
 {
 #ifdef UART_DEBUG
-    printf("Receiving packet from ENC28J60.\n");
+    printf("Receiving packet from ENC28J60.\r\n");
 #endif
     
 	uint16_t rxstat;
