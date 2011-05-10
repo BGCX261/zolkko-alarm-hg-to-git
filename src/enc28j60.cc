@@ -1,18 +1,25 @@
 /*
  * Network driver for ENC28J60 IC
  * 
- * Copyright (c) 2011 Alex Anisimov, <zolkko@gmail.com>
- * GPLv3
+ * Copyright (c) 2011 Alex Anisimov aka lx, <zolkko@gmail.com>
+ *
+ * This file is part of the SmokeHouseCTRL Firmware.
+ *
+ * The SmokeHouseCTRL Firmware is free software: you can redistribute it
+ * and/or modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * The SmokeHouseCTRL Firmware is distributed in the hope that it will be
+ * useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with SmokeHouseCTRL Firmware.  If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 
-#define UART_DEBUG 1
-
-#ifdef UART_DEBUG
-#include <stdio.h>
-#include "uart_stdio.h"
-#endif
-
-#include <stdio.h>
 #include <avr/io.h>
 #include <util/delay.h>
 #include <inttypes.h>
@@ -195,9 +202,6 @@ void enc28j60::read_buffer(uint16_t len, uint8_t* data)
 
 void enc28j60::write_buffer(uint16_t len, uint8_t* data)
 {
-#ifdef UART_DEBUG
-	printf("-- [ENC Write BUFFER ] ------\r\n");
-#endif
     _spi.select();
     
     // issue write command
@@ -207,10 +211,6 @@ void enc28j60::write_buffer(uint16_t len, uint8_t* data)
     while (len) {
         len--;
 		
-#ifdef UART_DEBUG
-		printf("0x%x ", *data);
-#endif
-        
         // write data
         _spi.write(*data);
         data++;
@@ -218,9 +218,6 @@ void enc28j60::write_buffer(uint16_t len, uint8_t* data)
         _spi.wait();
     }
     _spi.deselect();
-#ifdef UART_DEBUG
-	printf("\r\n-----------------------------\r\n");
-#endif
 }
 
 uint8_t enc28j60::read(uint8_t address)
@@ -304,9 +301,6 @@ uint8_t enc28j60::has_packet(void)
  */
 uint8_t enc28j60::send(ether_frame_t& frame)
 {
-#ifdef UART_DEBUG
-    printf("Send network packet via ENC28J60 driver.\r\n");
-#endif
     // Check no transmit in progress
     while (this->read_op(ENC28J60_READ_CTRL_REG, ECON1) & ECON1_TXRTS) {
         // Reset the transmit logic problem.
@@ -328,42 +322,21 @@ uint8_t enc28j60::send(ether_frame_t& frame)
     uint16_t data_len = frame.len_or_type;
 	
     if (data_len == ETHER_TYPE_ARP) {
-#ifdef UART_DEBUG
-		printf("Sending ETHERNET II arp-packet.\r\n");
-#endif
         data_len = sizeof(arp_hdr_t) + ENC28J60_ETHER_HDR_LEN;
     } else if (data_len == ETHER_TYPE_IP) {
-#ifdef UART_DEBUG
-		printf("Sending ETHERNET II ip-packet.\r\n");
-#endif
 		ip_hdr_t& ip_hdr = (ip_hdr_t&) frame.payload;
-#ifdef UART_DEBUG
-		printf("IP packet total length: %u.\r\n", n_to_uint16(ip_hdr.len));
-#endif
         data_len = n_to_uint16(ip_hdr.len) + ENC28J60_ETHER_HDR_LEN;
     } else {
-#ifdef UART_DEBUG
-		printf("Sending IEEE 802.3 Ethernet frame. Payload length: %d.\r\n", n_to_uint16(data_len));
-#endif
         // payload length + ethernet header without preamble section
         data_len = n_to_uint16(data_len) + ENC28J60_ETHER_HDR_LEN;
     }
-#ifdef UART_DEBUG
-		printf("ENC28J60_ETHER_HDR_LEN %u.\r\n", data_len);
-#endif
     
 	// Set the TXND pointer to correspond to the packet size given
 	this->write(ETXNDL, (TXSTART_INIT + data_len) & 0xff);
 	this->write(ETXNDH, (TXSTART_INIT + data_len) >> 8);
     
 	// Copy the packet into the transmit buffer
-#ifdef UART_DEBUG
-	printf("Writing data (count %u) into enc28j60 buffer.\r\n", data_len);
-#endif
     this->write_buffer(data_len, (uint8_t*) &frame.dst_mac);
-#ifdef UART_DEBUG
-	printf("Data has written into enc28j60.\r\n", data_len);
-#endif
     
 	// Send the contents of the transmit buffer onto the network
 	this->write_op(ENC28J60_BIT_FIELD_SET, ECON1, ECON1_TXRTS);
@@ -378,10 +351,6 @@ uint8_t enc28j60::send(ether_frame_t& frame)
 
 uint8_t enc28j60::receive(ether_frame_t& frame)
 {
-#ifdef UART_DEBUG
-    printf("Receiving packet from ENC28J60.\r\n");
-#endif
-    
 	uint16_t rxstat;
 	uint16_t len;
     
@@ -449,4 +418,3 @@ uint8_t enc28j60::receive(ether_frame_t& frame)
     
     return len;
 }
-

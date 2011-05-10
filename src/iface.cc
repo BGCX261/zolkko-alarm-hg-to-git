@@ -1,8 +1,23 @@
 /*
  * Network interface.
  *
- * Copyright (c) 2011 Alex Anisimov, <zolkko@gmail.com>
- * GPLv3
+ * Copyright (c) 2011 Alex Anisimov aka lx, <zolkko@gmail.com>
+ *
+ * This file is part of the SmokeHouseCTRL Firmware.
+ *
+ * The SmokeHouseCTRL Firmware is free software: you can redistribute it
+ * and/or modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * The SmokeHouseCTRL Firmware is distributed in the hope that it will be
+ * useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with SmokeHouseCTRL Firmware.  If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 
 #define UART_DEBUG 1
@@ -29,14 +44,6 @@ void iface::init(void)
  */
 void iface::make_preamble(void)
 {
-#ifdef UART_DEBUG
-	printf("Preparing PREAMBLE ethernet`s frame section.");
-#endif
-	
-#ifdef DEBUG
-    memset(&_buf, 0, sizeof(ether_frame_t));
-#endif
-	
     // Network driver have to set preable itself.
 	_buf.preamble[0] = 0xaa;
 	_buf.preamble[1] = 0xaa;
@@ -45,7 +52,7 @@ void iface::make_preamble(void)
 	_buf.preamble[4] = 0xaa;
 	_buf.preamble[5] = 0xaa;
 	_buf.preamble[6] = 0xaa;
-	_buf.start_of_frame = 0xab;	
+	_buf.start_of_frame = 0xab;
 }
 
 /*
@@ -53,23 +60,12 @@ void iface::make_preamble(void)
  */
 uint8_t iface::send_udp(const ether_addr_t& dst_eth, const ip_addr_t& dst_ip, const uint16_t dst_port, const uint16_t src_port, uint8_t * data, uint8_t data_len)
 {
-#ifdef UART_DEBUG
-	printf("Sending UDP packet (data length: %d).\r\n", data_len);
-#endif
-	
 	make_preamble();
 	
 	assign_mac(_buf.dst_mac, dst_eth);
     assign_mac(_buf.src_mac, _mac);
-#ifdef UART_DEBUG
-	printf("Destination ethernet address %x:%x:%x:%x:%x:%x.\r\n", _buf.dst_mac[0], _buf.dst_mac[1], _buf.dst_mac[2], _buf.dst_mac[3], _buf.dst_mac[4], _buf.dst_mac[5]);
-	printf("Source ethernet address %x:%x:%x:%x:%x:%x.\r\n", _buf.src_mac[0], _buf.src_mac[1], _buf.src_mac[2], _buf.src_mac[3], _buf.src_mac[4], _buf.src_mac[5]);
-#endif
 	
 	uint16_t payload_len = data_len + IP_HDR_LEN + UDP_HDR_LEN;
-#ifdef UART_DEBUG
-	printf("Ethernet payload length: %d.\r\n", payload_len);
-#endif
 	// ISSUE: _buf.len_or_type = uint16_to_n(payload_len);
 	//
 	// This should be an ETHERNET TYPE II packet.
@@ -93,55 +89,112 @@ uint8_t iface::send_udp(const ether_addr_t& dst_eth, const ip_addr_t& dst_ip, co
     assign_ip(ip_hdr.src_addr, _ip);
     assign_ip(ip_hdr.dst_addr, dst_ip);
 	
-#ifdef UART_DEBUG
-	printf("Source IP address %d.%d.%d.%d.\r\n", ip_hdr.src_addr[0], ip_hdr.src_addr[1], ip_hdr.src_addr[2], ip_hdr.src_addr[3]);
-	printf("Destination IP address %d.%d.%d.%d.\r\n", ip_hdr.dst_addr[0], ip_hdr.dst_addr[1], ip_hdr.dst_addr[2], ip_hdr.dst_addr[3]);
-#endif
-	
 	// Calculate IP header check sum
 	uint16_t ip_crc = checksum((uint8_t *) &(ip_hdr.version_len), IP_HDR_LEN, 0);
-#ifdef UART_DEBUG
-	printf("IP header CRC %x.\r\n", ip_crc);
-#endif
 	ip_hdr.hdr_crc = uint16_to_n(ip_crc);
 	
 	udp_hdr_t& udp_hdr = (udp_hdr_t&) ip_hdr.data;
 	udp_hdr.src_port = uint16_to_n(src_port);
 	udp_hdr.dst_port = uint16_to_n(dst_port);
-#ifdef UART_DEBUG
-	printf("Source port in network byte order: %x.\r\n",  udp_hdr.src_port);
-	printf("Destination port in network byte order: %x.\r\n", udp_hdr.dst_port);
-#endif
 	
 	uint16_t udp_payload_len = data_len + UDP_HDR_LEN;
 	udp_hdr.ulen = uint16_to_n(udp_payload_len);
-#ifdef UART_DEBUG
-	printf("UDP payload length %x.\r\n", udp_payload_len);
-	printf("UDP payload length in network byte order %x.\r\n", udp_hdr.ulen);
-#endif
-	udp_hdr.crc = 0x0000; // TODO: calculate check summ
+	udp_hdr.crc = 0x0000;
 	
 	// Populating UDP datagramm data
 	uint8_t i;
-#ifdef UART_DEBUG
-	printf("-- [ UDP datagram ] ---------\r\n");
-#endif
 	for (i = 0; i < data_len; i++) {
 		udp_hdr.data[i] = data[i];
-#ifdef UART_DEBUG
-		printf("0x%x ", udp_hdr.data[i]);
-#endif
 	}
-#ifdef UART_DEBUG
-	printf("\r\n-----------------------------\r\n");
-#endif
 	
 	// UDP crc is optional for IPv4 and non optional for IPv6
 	uint16_t udp_crc = checksum((uint8_t *) &(ip_hdr.src_addr[0]), data_len + 16, 1);
-#ifdef UART_DEBUG
-	printf("UDP CRC %x.\r\n", udp_crc);
-#endif
 	udp_hdr.crc = uint16_to_n(udp_crc);
+	
+	
+#ifdef UART_DEBUG
+	printf("Sending UDP packet (data length: %d) from udp://%u.%u.%u.%u:%u (%x:%x:%x:%x:%x:%x) to udp://%u.%u.%u.%u:%u (%x:%x:%x:%x:%x:%x).\r\n",
+		data_len,
+		ip_hdr.src_addr[0], ip_hdr.src_addr[1], ip_hdr.src_addr[2], ip_hdr.src_addr[3],
+		n_to_uint16(udp_hdr.src_port),
+		_buf.src_mac[0], _buf.src_mac[1], _buf.src_mac[2], _buf.src_mac[3], _buf.src_mac[4], _buf.src_mac[5],
+		
+		ip_hdr.dst_addr[0], ip_hdr.dst_addr[1], ip_hdr.dst_addr[2], ip_hdr.dst_addr[3],
+		n_to_uint16(udp_hdr.dst_port),
+		_buf.dst_mac[0], _buf.dst_mac[1], _buf.dst_mac[2], _buf.dst_mac[3], _buf.dst_mac[4], _buf.dst_mac[5]);
+#endif
+	
+	// Sending data
+	_driver.send(_buf);
+	
+	return true;
+}
+
+/*
+ * Returns udp packet (if applicable)
+ */
+uint8_t iface::receive(void)
+{
+	if (!_driver.has_packet()) {
+		return false;
+	} else {
+		_driver.receive(_buf);
+		return true;
+	}
+}
+
+/*
+ * Checks if it is an arp request or not.
+ *
+ * TODO: remove operation check
+ */
+uint8_t iface::is_arp(void)
+{
+	if (_buf.len_or_type != ETHER_TYPE_ARP) {
+		return false;
+	}
+	
+	arp_hdr_t& arp_req = (arp_hdr_t&) _buf.payload;
+	if (n_to_uint16(arp_req.hardware_type) != ARP_HARDWARE_TYPE_ETHERNET ||
+		n_to_uint16(arp_req.proto_type) != ARP_PROTO_TYPE_ARP_IPV4 ||
+		arp_req.hlen != IF_ETHER_ADDR_LEN ||
+		arp_req.plen != IF_IP_ADDR_LEN ||
+		n_to_uint16(arp_req.operation) != ARP_OPERATION_ACK ||
+		!equal_ip(arp_req.dst_ip, _ip))
+	{
+		return false;
+	}
+	
+	return true;
+}
+
+/*
+ * ARP response
+ */
+uint8_t iface::arp_response(void) {
+	if (!is_arp()) {
+		return false;
+	}
+	
+	// Fill ethernet frame fields
+	assign_mac(_buf.dst_mac, _buf.src_mac);
+	assign_mac(_buf.src_mac, _mac);
+	
+	// Fill arp response
+	arp_hdr_t& arp = (arp_hdr_t&) _buf.payload;
+	
+	arp.operation = uint16_to_n(ARP_OPERATION_ANS);
+	
+    assign_mac(arp.dst_mac, arp.src_mac);
+	assign_mac(arp.src_mac, _mac);
+	
+    assign_ip(arp.dst_ip, arp.src_ip);
+	assign_ip(arp.src_ip, _ip);
+	
+	_buf.payload[sizeof(arp_hdr_t)]     = 0x00;
+    _buf.payload[sizeof(arp_hdr_t) + 1] = 0x00;
+    _buf.payload[sizeof(arp_hdr_t) + 2] = 0x00;
+    _buf.payload[sizeof(arp_hdr_t) + 3] = 0x00;
 	
 	_driver.send(_buf);
 	
@@ -149,15 +202,69 @@ uint8_t iface::send_udp(const ether_addr_t& dst_eth, const ip_addr_t& dst_ip, co
 }
 
 /*
+ * Checks if received packet is an UDP packet
+ */
+uint8_t iface::is_udp(void)
+{
+	if (_buf.len_or_type != ETHER_TYPE_IP) {
+		return false;
+	}
+	
+	ip_hdr_t& ip_hdr = (ip_hdr_t&) _buf.payload;
+	
+	// TODO: Verify IP header CRC16
+	if (ip_hdr.version_len != 0x45 ||
+		ip_hdr.proto != IP_PROTO_UDP_V ||
+		!equal_ip(ip_hdr.dst_addr, _ip))
+	{
+		return false;
+	}
+	
+	return true;
+}
+
+/*
+ * Returns pointer to the UDP data
+ */
+uint8_t iface::udp_read(ether_frame_t ** __ether_hdr, ip_hdr_t ** __ip_hdr, udp_hdr_t ** __udp_hdr)
+{
+	if (!is_udp()) {
+		return false;
+	}
+	
+	if (__ether_hdr != NULL) {
+		*__ether_hdr = &_buf;
+	}
+	
+	ip_hdr_t& ip_hdr = (ip_hdr_t&) _buf.payload;
+	if (__ip_hdr != NULL) {
+		*__ip_hdr = &ip_hdr;
+	}
+	
+	udp_hdr_t& udp_hdr = (udp_hdr_t&) ip_hdr.data;
+	if (__udp_hdr != NULL) {
+		*__udp_hdr = &udp_hdr;
+	}
+	
+	return true;
+}
+
+/*
+ * Checks if interface has a packet.
+ */
+uint8_t iface::has_packet(void)
+{
+	return _driver.has_packet();
+}
+
+/*
  * Resolves ethernet address by IP by sending ARP request
  * and returns it in mac variable.
+ *
+ * TODO: split into two parts.
  */
 uint8_t iface::resolve_ip(const ip_addr_t& ip, ether_addr_t& mac)
 {
-#ifdef UART_DEBUG
-    printf("Resolving IP address %d.%d.%d.%d.\r\n", ip[0], ip[1], ip[2], ip[3]);
-#endif
-    
 	make_preamble();
 	
     set_mac(_buf.dst_mac, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff); // broad-cast address
@@ -190,14 +297,8 @@ uint8_t iface::resolve_ip(const ip_addr_t& ip, ether_addr_t& mac)
     // so just skip wrong packets.
     
     do {
-#ifdef DEBUG
-		memset(&_buf, 0, sizeof(ether_frame_t));
-#endif
 		uint8_t tries = 0;
         while (!_driver.has_packet()) {
-#ifdef UART_DEBUG
-			printf("Wait for ARP answer.\r\n");
-#endif
 			tries++;
 			if (tries == IFACE_RECEIVE_COUNT) {
 #ifdef UART_DEBUG
@@ -208,37 +309,31 @@ uint8_t iface::resolve_ip(const ip_addr_t& ip, ether_addr_t& mac)
             _delay_ms(IFACE_RECEIVE_TIMEOUT);
         }
 		
-#ifdef UART_DEBUG
-		printf("Data received. Reading ENC28J60 driver`s buffer.\r\n");
-#endif
         _driver.receive(_buf);
 		
         if (_buf.len_or_type == ETHER_TYPE_ARP) {
+			
             arp_hdr_t& arp_ans = (arp_hdr_t&) _buf.payload;
-#ifdef UART_DEBUG
-			printf("ETHER_TYPE_ARP packet received.\r\nOperation: %d.\r\n", n_to_uint16(arp_ans.operation));
-#endif
 			
             if (n_to_uint16(arp_ans.operation) == ARP_OPERATION_ANS &&
 				equal_ip(arp_ans.dst_ip, _ip) &&
 				equal_ip(arp_ans.src_ip, ip))
             {
-				
                 assign_mac(mac, arp_ans.src_mac);
 #ifdef UART_DEBUG
-                printf("IP address %d.%d.%d.%d has been resolved into ethernet address %x:%x:%x:%x:%x:%x.\r\n", ip[0], ip[1], ip[2], ip[3], mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+                printf("Packet accepted. IP address resolved.\r\n");
 #endif
                 return true;
             }
 #ifdef UART_DEBUG
 			else {
-				printf("Unknown ETHERNET packet received.\r\n");
+				printf("Packet rejected. Invalid arp packet received.\r\n");
 			}
 #endif
         }
 #ifdef UART_DEBUG
 		else {
-			printf("Unknown packet type received %x.\r\n", _buf.len_or_type);
+			printf("Packet rejected. Unexpected packet type %x received.\r\n", _buf.len_or_type);
 		}
 #endif
     } while (true);
