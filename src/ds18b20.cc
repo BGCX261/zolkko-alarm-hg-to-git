@@ -20,6 +20,7 @@
  * along with SmokeHouseCTRL Firmware.  If not, see
  * <http://www.gnu.org/licenses/>.
  */
+
 #ifdef UART_DEBUG
 #include <stdio.h>
 #endif

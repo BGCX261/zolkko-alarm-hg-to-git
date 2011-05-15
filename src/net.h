@@ -1,7 +1,7 @@
 /*
  * Common network interface structures and types
  *
- * Copyright (c) 2011 Alex Anisimov aka lx, <zolkko@gmail.com>
+ * Copyright (c) 2011 Alex Anisimov, <zolkko@gmail.com>
  *
  * This file is part of the SmokeHouseCTRL Firmware.
  *

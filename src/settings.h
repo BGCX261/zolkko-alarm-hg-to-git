@@ -1,9 +1,5 @@
 /*
- * Interface master XMega SPI module.
- *
- * TODO: Add interrupt support, async bufferred transfer
- * and receiving, DMA slave mode, acting in slave mode,
- * switching into slave mode and other XMega SPI module features.
+ * Abstract settings
  *
  * Copyright (c) 2011 Alex Anisimov, <zolkko@gmail.com>
  *
@@ -23,10 +19,44 @@
  * along with SmokeHouseCTRL Firmware.  If not, see
  * <http://www.gnu.org/licenses/>.
  */
-
-#include <avr/io.h>
-#include "spi.h"
-
-
-
-
+ 
+ #ifndef _SETTINGS_H_
+ #define _SETTINGS_H
+ 
+ class Settings
+ {
+	private:
+		
+	public:
+		Settings()
+		{
+		}
+		
+		/*
+		 * Returns ACS 
+		 */
+		virtual ether_addr_t& get_local_mac(void) = 0;
+		
+		/*
+		 * Returns ACS 
+		 */
+		virtual ip_addr_t& get_local_addr(void) = 0;
+		
+		/*
+		 * Returns ACS service ip address
+		 */
+		virtual ip_addr_t& get_service_addr(void) = 0;
+		
+		/*
+		 * ACS service port
+		 */
+		virtual uint16_t get_service_port(void) = 0;
+		
+		/*
+		 * ACS local port
+		 */
+		virtual uint16_t get_local_port(void) = 0;
+ };
+ 
+ #endif
+ 

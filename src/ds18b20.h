@@ -20,6 +20,7 @@
  * along with SmokeHouseCTRL Firmware.  If not, see
  * <http://www.gnu.org/licenses/>.
  */
+
 #ifndef _ds18b20_h_
 #define _ds18b20_h_
 

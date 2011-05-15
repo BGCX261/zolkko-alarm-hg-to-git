@@ -1,9 +1,5 @@
 /*
- * Interface master XMega SPI module.
- *
- * TODO: Add interrupt support, async bufferred transfer
- * and receiving, DMA slave mode, acting in slave mode,
- * switching into slave mode and other XMega SPI module features.
+ * Static settings implementation
  *
  * Copyright (c) 2011 Alex Anisimov, <zolkko@gmail.com>
  *
@@ -24,9 +20,40 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include <avr/io.h>
-#include "spi.h"
+#ifndef _STATIC_SETTINGS_H_
+#define _STATIC_SETTINGS_H_
 
+class StaticSettings : public Settings
+{		
+	public :
+		StaticSettings()
+		{
+		}
+		
+		/*
+		 * Returns ACS 
+		 */
+		ether_addr_t& get_local_mac(void);
+		
+		/*
+		 * Returns ACS 
+		 */
+		ip_addr_t& get_local_addr(void);
+		
+		/*
+		 * Returns ACS service ip address
+		 */
+		ip_addr_t& get_service_addr(void);
+		
+		/*
+		 * ACS service port
+		 */
+		uint16_t get_service_port(void);
+		
+		/*
+		 * ACS local port
+		 */
+		uint16_t get_local_port(void);
+};
 
-
-
+#endif

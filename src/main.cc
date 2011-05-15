@@ -1,7 +1,7 @@
 /*
  * Smoke House Controlling device firmware main file
  *
- * Copyright (c) 2011 Alex Anisimov aka lx, <zolkko@gmail.com>
+ * Copyright (c) 2011 Alex Anisimov, <zolkko@gmail.com>
  *
  * This file is part of the SmokeHouseCTRL Firmware.
  *
@@ -35,6 +35,9 @@
 #include "net_driver.h"
 #include "enc28j60.h"
 #include "iface.h"
+#include "udp_service.h"
+#include "settings.h"
+#include "static_settings.h"
 
 
 /*
@@ -70,6 +73,8 @@ int main(void)
 	uart_init();
 	printf("\r\n\r\n=================================\r\nUART debugging module has been initialized.\r\n=================================\r\n");
 #endif
+	
+	StaticSettings settings;
     
     // Initialize spi master driver for enc28j60 module
     spi spi(&SPIE,
@@ -95,6 +100,13 @@ int main(void)
     
     iface netif(drv, device_mac, device_ip);
     netif.init();
+	
+	udp_service udpsvc(netif);
+	udpsvc.init();
+	
+	do {
+		udpsvc.iterate();
+	} while (true);
 	
 	do {
 #ifdef UART_DEBUG

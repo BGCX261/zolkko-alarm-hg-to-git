@@ -1,7 +1,7 @@
 /*
  * Network driver for ENC28J60 IC
  * 
- * Copyright (c) 2011 Alex Anisimov aka lx, <zolkko@gmail.com>
+ * Copyright (c) 2011 Alex Anisimov, <zolkko@gmail.com>
  *
  * This file is part of the SmokeHouseCTRL Firmware.
  *

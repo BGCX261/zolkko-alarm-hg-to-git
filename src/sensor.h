@@ -1,7 +1,11 @@
 /*
  * Abstract sensor class
  *
- * Copyright (c) 2011 Alex Anisimov aka lx, <zolkko@gmail.com>
+ * TODO: Add interrupt support, async bufferred transfer
+ * and receiving, DMA slave mode, acting in slave mode,
+ * switching into slave mode and other XMega SPI module features.
+ *
+ * Copyright (c) 2011 Alex Anisimov, <zolkko@gmail.com>
  *
  * This file is part of the SmokeHouseCTRL Firmware.
  *
