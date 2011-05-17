@@ -29,6 +29,21 @@ class static_settings : public settings
 		static_settings()
 		{
 		}
+        
+        /*
+         * Returns AES secret key
+         */
+        const uint8_t (&get_secret_key(void))[AES_BLOCK_LENGTH];
+        
+        /*
+         * Returns device login
+         */
+        const uint8_t (&get_device_login(void))[DEV_LOGIN_LENGTH];
+        
+        /*
+         * Returns device password
+         */
+        const uint8_t (&get_device_password(void))[DEV_PASSWORD_LENGTH];
 		
 		/*
 		 * Returns ACS 

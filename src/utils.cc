@@ -24,6 +24,104 @@
 #include "net.h"
 #include "utils.h"
 
+inline void aes_load_key(const uint8_t * key)
+{
+    for (uint8_t i = 0; i < AES_BLOCK_LENGTH; i++) AES.KEY = key[i];
+}
+
+/*
+ * Encrypts data
+ */
+uint8_t aes_encrypt(const uint8_t * key, const uint8_t * data, uint8_t * encdata)
+{
+    // Reset AES module
+    AES.CTRL = AES_RESET_bm;
+    
+    aes_load_key(key);
+    
+	// Load data into AES state memory
+	for (uint8_t i = 0; i < AES_BLOCK_LENGTH; i++) {
+		AES.STATE = data[i];
+	}
+    
+	// Set AES in encryption mode and start AES
+	AES.CTRL = (AES.CTRL & (~AES_DECRYPT_bm)) | AES_START_bm;
+	do {
+		// Wait until AES is finished or an error occurs
+	} while ((AES.STATUS & (AES_SRIF_bm|AES_ERROR_bm) ) == 0);
+    
+	// If not error
+	if ((AES.STATUS & AES_ERROR_bm) == 0) {
+		for (uint8_t i = 0; i < AES_BLOCK_LENGTH; i++) {
+            encdata[i] = AES.STATE;
+		}
+        return true;
+	} else {
+        return false;
+	}
+}
+
+/*
+ * Decrypts data
+ */
+uint8_t aes_decrypt(const uint8_t * key, const uint8_t * data, uint8_t * out_data)
+{
+    AES_CTRL = AES_RESET_bm;
+    
+    // Calculate key base on KEY variable
+    aes_load_key(key);
+    
+    // Load dummy data into AES state memory
+	for (uint8_t i = 0; i < AES_BLOCK_LENGTH; i++) {
+        AES.STATE = 0x00;
+    }
+    
+    // Set AES in encryption mode and start AES
+    AES.CTRL = (AES.CTRL & (~AES_DECRYPT_bm)) | AES_START_bm;
+    do {
+        // Wait until AES is finished or an error occurs
+    } while ((AES.STATUS & (AES_SRIF_bm|AES_ERROR_bm) ) == 0);
+    
+    uint8_t subkey[AES_BLOCK_LENGTH];
+    
+    // If not error
+    if ((AES.STATUS & AES_ERROR_bm) == 0) {
+        // Store the last subkey
+		for (uint8_t i = 0; i < AES_BLOCK_LENGTH; i++) {
+            subkey[i] = AES.KEY;
+        }
+		AES.STATUS = AES_SRIF_bm;
+    } else {
+        AES.STATUS = AES_ERROR_bm;
+        return false;
+    }
+    
+    // Decrypt
+    aes_load_key(subkey);
+    
+    // Load data into AES state memory
+    for (uint8_t i = 0; i < AES_BLOCK_LENGTH; i++) {
+        AES.STATE = data[i];
+    }
+    
+    // Set AES in decryption mode and start the AES
+    AES.CTRL |= (AES_START_bm | AES_DECRYPT_bm);
+    
+    do {
+        // Wait until AES is finished or an error occurs
+    } while ((AES.STATUS & (AES_SRIF_bm|AES_ERROR_bm)) == 0);
+    
+    // If not error
+    if ((AES.STATUS & AES_ERROR_bm) == 0) {
+        for (uint8_t i = 0; i < AES_BLOCK_LENGTH; i++) {
+            out_data[i] = AES.STATE;
+		}
+    } else {
+        return false;
+    }
+    
+    return true;
+}
 
 uint32_t get_cpu_freq(void)
 {

@@ -33,6 +33,41 @@ const static ip_addr_t device_ip = {192, 168, 55, 2};
 // ACS Service IP address
 const static ip_addr_t service_ip = {192, 168, 55, 1};
 
+
+// Device login
+const static uint8_t __device_login[DEV_LOGIN_LENGTH] = {'z', 'o', 'l', 'l', 'k', 'o'};
+
+// Device password
+const static uint8_t __device_password[DEV_PASSWORD_LENGTH] = {'^', 'p', 'a', 's', 's', 'w', 'o', 'r', 'd', '$'};
+
+// AES secret key
+const static uint8_t __secret_key[AES_BLOCK_LENGTH] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+
+
+/*
+ * returns AES secret key
+ */
+const uint8_t (&static_settings::get_secret_key(void))[AES_BLOCK_LENGTH]
+{
+    return (const uint8_t (&)[AES_BLOCK_LENGTH]) __secret_key;
+}
+
+/*
+ * return device login
+ */
+const uint8_t (&static_settings::get_device_login(void))[DEV_LOGIN_LENGTH]
+{
+    return (uint8_t (&)[DEV_LOGIN_LENGTH]) __device_login;
+}
+
+/*
+ * return device password
+ */
+const uint8_t (&static_settings::get_device_password(void))[DEV_PASSWORD_LENGTH]
+{
+    return (uint8_t (&)[DEV_PASSWORD_LENGTH]) __device_password;
+}
+
 ether_addr_t& static_settings::get_device_eth(void)
 {
 	return (ether_addr_t&) device_mac;
@@ -57,3 +92,4 @@ uint16_t static_settings::get_device_port(void)
 {
 	return 9092;
 }
+

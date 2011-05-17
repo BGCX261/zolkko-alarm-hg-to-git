@@ -27,6 +27,23 @@ extern "C" {
 #endif
 
 /*
+ * Interface for XMega's AES module
+ */
+#ifndef AES_BLOCK_LENGTH
+#define AES_BLOCK_LENGTH 16
+#endif
+
+/*
+ * Encrypt data using AES
+ */
+extern uint8_t aes_encrypt(const uint8_t * key, const uint8_t * data, uint8_t * encdata);
+
+/*
+ * Decrypt data using AES
+ */
+extern uint8_t aes_decrypt(const uint8_t * key, const uint8_t * data, uint8_t * out_data);
+
+/*
  * Returns CPU freq according to current
  * clock source.
  */

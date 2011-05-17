@@ -24,41 +24,64 @@
 #define _udp_service_h_
 
 /*
- * Authorization request
+ * Maximum count of authentication packets device will try to send
+ * before switching to the do_nothing fall-back.
  */
-typedef struct _smh_auth {
-	uint8_t login[6]; // ethernet address / login
-	uint8_t password[10];
-} smh_auth;
+#ifndef UDP_SVC_MAX_AUTH_TRIES
+#define UDP_SVC_MAX_AUTH_TRIES 100
+#endif
+
+#ifndef UDP_SVC_MAX_ARP_TRIES
+#define UDP_SVC_MAX_ARP_TRIES 100
+#endif
+
+#ifndef UDP_SVC_MAX_AUTH_RESPONSE_TRIES
+#define UDP_SVC_MAX_AUTH_RESPONSE_TRIES 100
+#endif
 
 /*
- * ACS Service authentication response
+ * Authentication token
  */
-typedef struct _smh_auth_resp {
-	uint8_t svc_password[10];
-} smh_auth_resp ;
+typedef struct _auth_token_t {
+    ip_addr_t ip;
+    uint8_t password[DEV_PASSWORD_LENGTH];
+    uint16_t id;
+} auth_token_t;
 
 /*
  * Sensors data
  */
-typedef struct _smh_sensor {
+typedef struct _pkt_sensor_t {
 	uint8_t hot;
 	uint8_t inner;
 	uint8_t humid;
 	uint8_t digit;
-} smh_sensor ;
+} pkt_sensor_t ;
 
 /*
  * Action request
  */
-typedef struct _smh_pkt {
-	uint8_t type;
-	union {
-		smh_auth auth;
-		smh_auth_resp auth_resp;
-		smh_sensor sensor;
-	} pkt ;
-} smh_pkt ;
+typedef struct _pkt_t {
+    uint8_t type;
+    uint8_t status;
+    auth_token_t auth_token;
+    union {
+        pkt_sensor_t sensor;
+    } pkt ;
+} pkt_t ;
+
+#define PKT_SIZE_BASE (sizeof(auth_token_t) + 2)
+
+
+#define PKT_TYPE_AUTH 0x01
+#define PKT_TYPE_AUTH_RESPONSE 0x02
+
+/*
+ * Authentication response status
+ */
+#define PKT_STATUS_OK     200
+#define PKT_STATUS_FAILED 0
+#define PKT_STATUS_DENIED 201
 
 class udp_service
 {
@@ -68,19 +91,31 @@ class udp_service
 			uint8_t tries;
 		} _state;
 		
-		smh_pkt _pkt;
-		
         iface& _netif;
 		
 		settings& _settings;
+        
+        uint16_t _device_id;
 		
 		/*
 		 * Member to store ASC Service mac address
 		 */
 		ether_addr_t _service_eth;
+        
+        void decrypt_token(auth_token_t * token);
+        
+        void encrypt_token(uint16_t id, auth_token_t * out_token);
+        
+        void do_init_state(void);
+        
+        void do_authentication_state(void);
+        
+        void do_authentication_response_state(uint8_t& received);
 		
     public:
-		udp_service(settings& __settings, iface& __netif) : _settings(__settings), _netif(__netif)
+		udp_service(settings& __settings, iface& __netif) :
+            _settings(__settings),
+            _netif(__netif)
 		{
 		}
 		
@@ -92,3 +127,4 @@ class udp_service
 };
 
 #endif
+
