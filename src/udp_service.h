@@ -60,15 +60,6 @@ typedef struct _smh_pkt {
 	} pkt ;
 } smh_pkt ;
 
-/*
- * 
- */
-
-#define UDP_SVC_STATE_START 0x01
-#define UDP_SVC_STATE_AUTH 0x02
-#define UDP_SVC_STATE_AUTH_RESPONSE 0x03
-#define UDP_SVC_STATE_MAIN 0x04
-
 class udp_service
 {
     private:
@@ -79,14 +70,17 @@ class udp_service
 		
 		smh_pkt _pkt;
 		
-		ether_addr_t service_mac;
-		
-		ip_addr_t service_ip;
-		
         iface& _netif;
 		
+		settings& _settings;
+		
+		/*
+		 * Member to store ASC Service mac address
+		 */
+		ether_addr_t _service_eth;
+		
     public:
-		udp_service(iface& __netif) : _netif(__netif)
+		udp_service(settings& __settings, iface& __netif) : _settings(__settings), _netif(__netif)
 		{
 		}
 		

@@ -10,6 +10,7 @@ CPP = avr-g++
 
 ## Options common to compile, link and assembly rules
 COMMON = -mmcu=$(MCU) -DF_CPU=$(FREQ)
+COMMON += -DUART_DEBUG=1
 
 ## Compile options common for all C compilation units.
 CFLAGS = $(COMMON)

@@ -1,5 +1,5 @@
 /*
- * Static settings implementation
+ * 1-wire interface
  *
  * Copyright (c) 2011 Alex Anisimov, <zolkko@gmail.com>
  *
@@ -20,40 +20,41 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _STATIC_SETTINGS_H_
-#define _STATIC_SETTINGS_H_
+#ifndef _ONEWIRE_H_
+#define _ONEWIRE_H_
 
-class static_settings : public settings
-{		
+
+#define OW_ROM_READ				0x33  // READ ROM command code.
+#define OW_ROM_SKIP				0xcc  // SKIP ROM command code.
+#define OW_ROM_MATCH			0x55  // MATCH ROM command code.
+#define OW_ROM_SEARCH			0xf0  // SEARCH ROM command code.
+
+/*
+ * Return codes
+ */
+#define OW_ROM_SEARCH_FINISHED	0x00    // Search finished return code.
+#define OW_ROM_SEARCH_FAILED	0xff    // Search failed return code.
+
+/*
+ * UART patterns
+ */
+#define OW_UART_WRITE1			0xff  // UART Write 1 bit pattern.
+#define OW_UART_WRITE0			0x00  // UART Write 0 bit pattern.
+#define OW_UART_READ_BIT		0xff  // UART Read bit pattern.
+#define OW_UART_RESET			0xf0  // UART Reset bit pattern.
+
+#define OW_UART_2X				1
+#define OW_UBRR_115200			8
+#define OW_UBRR_9600			103
+
+class OneWire()
+{
 	public :
-		static_settings()
+		OneWire()
 		{
 		}
 		
-		/*
-		 * Returns ACS 
-		 */
-		ether_addr_t& get_device_eth(void);
-		
-		/*
-		 * Returns ACS 
-		 */
-		ip_addr_t& get_device_ip(void);
-		
-		/*
-		 * Returns ACS service ip address
-		 */
-		ip_addr_t& get_service_ip(void);
-		
-		/*
-		 * ACS service port
-		 */
-		uint16_t get_service_port(void);
-		
-		/*
-		 * ACS local port
-		 */
-		uint16_t get_device_port(void);
+		void init(void);
 };
 
 #endif

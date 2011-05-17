@@ -23,29 +23,29 @@
  #ifndef _SETTINGS_H_
  #define _SETTINGS_H
  
- class Settings
+ class settings
  {
 	private:
 		
 	public:
-		Settings()
+		settings()
 		{
 		}
 		
 		/*
 		 * Returns ACS 
 		 */
-		virtual ether_addr_t& get_local_mac(void) = 0;
+		virtual ether_addr_t& get_device_eth(void) = 0;
 		
 		/*
 		 * Returns ACS 
 		 */
-		virtual ip_addr_t& get_local_addr(void) = 0;
+		virtual ip_addr_t& get_device_ip(void) = 0;
 		
 		/*
 		 * Returns ACS service ip address
 		 */
-		virtual ip_addr_t& get_service_addr(void) = 0;
+		virtual ip_addr_t& get_service_ip(void) = 0;
 		
 		/*
 		 * ACS service port
@@ -55,7 +55,7 @@
 		/*
 		 * ACS local port
 		 */
-		virtual uint16_t get_local_port(void) = 0;
+		virtual uint16_t get_device_port(void) = 0;
  };
  
  #endif

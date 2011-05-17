@@ -33,27 +33,27 @@ const static ip_addr_t device_ip = {192, 168, 55, 2};
 // ACS Service IP address
 const static ip_addr_t service_ip = {192, 168, 55, 1};
 
-ether_addr_t& StaticSettings::get_local_mac(void)
+ether_addr_t& static_settings::get_device_eth(void)
 {
 	return (ether_addr_t&) device_mac;
 }
 
-ip_addr_t& StaticSettings::get_local_addr(void)
+ip_addr_t& static_settings::get_device_ip(void)
 {
 	return (ip_addr_t&) device_ip;
 }
 
-ip_addr_t& StaticSettings::get_service_addr(void)
+ip_addr_t& static_settings::get_service_ip(void)
 {
 	return (ip_addr_t&) service_ip;
 }
 
-uint16_t StaticSettings::get_service_port(void)
+uint16_t static_settings::get_service_port(void)
 {
 	return 9091;
 }
 
-uint16_t StaticSettings::get_local_port(void)
+uint16_t static_settings::get_device_port(void)
 {
 	return 9092;
 }

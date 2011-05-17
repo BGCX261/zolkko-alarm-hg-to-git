@@ -20,8 +20,6 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#define UART_DEBUG 1
-
 #include <avr/io.h>
 #include <util/delay.h>
 
@@ -35,9 +33,9 @@
 #include "net_driver.h"
 #include "enc28j60.h"
 #include "iface.h"
-#include "udp_service.h"
 #include "settings.h"
 #include "static_settings.h"
+#include "udp_service.h"
 
 
 /*
@@ -51,19 +49,6 @@ extern "C" void __cxa_pure_virtual()
 	do {} while (1) ;
 }
 
-// Device ethernet addresses
-const static ether_addr_t device_mac = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06};
-
-// Device IP address
-const static ip_addr_t device_ip = {192, 168, 55, 2};
-
-// Service mac address
-static ether_addr_t service_mac = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-
-// ACS Service IP address
-const static ip_addr_t service_ip = {192, 168, 55, 1};
-
-
 int main(void)
 {
 	// Stabilization. This line will help much on schematic SC errors.
@@ -74,7 +59,7 @@ int main(void)
 	printf("\r\n\r\n=================================\r\nUART debugging module has been initialized.\r\n=================================\r\n");
 #endif
 	
-	StaticSettings settings;
+	static_settings settings;
     
     // Initialize spi master driver for enc28j60 module
     spi spi(&SPIE,
@@ -98,25 +83,24 @@ int main(void)
 	}
 #endif
     
-    iface netif(drv, device_mac, device_ip);
+    iface netif(drv, settings.get_device_eth(), settings.get_device_ip());
     netif.init();
 	
-	udp_service udpsvc(netif);
+	udp_service udpsvc(settings, netif);
 	udpsvc.init();
 	
 	do {
 		udpsvc.iterate();
 	} while (true);
 	
+	/*
 	do {
 #ifdef UART_DEBUG
 		printf("Resolving ACS Service IP address.\r\n");
 #endif
 		if (netif.resolve_ip(service_ip, service_mac)) {
 #ifdef UART_DEBUG
-			printf("ACS Service IP %u.%u.%u.%u resolved into ethernet address %x:%x:%x:%x:%x:%x.\r\n",
-				service_ip[0], service_ip[1], service_ip[2], service_ip[3],
-				service_mac[0], service_mac[1], service_mac[2], service_mac[3], service_mac[4], service_mac[5]);
+
 #endif
 			break;
 		}
@@ -195,6 +179,6 @@ int main(void)
 #endif
 		}
     } while (true) ;
-	
+	*/
 	return 0;
 }
