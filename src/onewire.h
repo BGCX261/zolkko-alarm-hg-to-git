@@ -47,21 +47,42 @@
 #define OW_UBRR_115200			8
 #define OW_UBRR_9600			103
 
+#define OW_ROM_LENGTH 8
+
 class one_wire
 {
 	private:
 		USART_t& _uart;
+        
+        PORT_t& _uart_port;
+        
+        uint8_t _uart_tx_pin;
+        
+        uint8_t _uart_rx_pin;
+        
+        uint8_t _rom[OW_ROM_LENGTH];
 		
 		uint8_t touch_bit(uint8_t value);
 		
 	public:
-		one_wire(USART_t& __uart) : _uart(__uart)
+		one_wire(USART_t& __uart, PORT_t& __uart_port, uint8_t __tx_pin, uint8_t __rx_pin) :
+                        _uart(__uart),
+                        _uart_port(__uart_port)
 		{
+            _uart_tx_pin = __tx_pin;
+            _uart_rx_pin = __rx_pin;
 		}
 		
 		void init(void);
-		
+        
+        uint8_t receive(void);
+        
+        void send(uint8_t value);
+        
 		uint8_t detect_presents(void);
+        
+        void skip_rom(void);
 };
 
 #endif
+

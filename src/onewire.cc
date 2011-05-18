@@ -33,7 +33,8 @@
  */
 void one_wire::init(void)
 {
-	UART_TX_PORT.DIRSET = _BV(UART_TX_PIN);
+    _uart_port.DIRSET = _BV(_uart_tx_pin);
+    _uart_port.DIRSET = _BV(_uart_rx_pin);
 	
 	// 8N1
 	_uart.CTRLC = (uint8_t) USART_CHSIZE_8BIT_gc | USART_PMODE_DISABLED_gc; // TODO: USART 2X
@@ -48,13 +49,12 @@ void one_wire::init(void)
 }
 
 /*
-uint8_t one_wire::read_bit(void)
+ * Skip ROM
+ */
+void one_wire::skip_rom(void)
 {
-	// Return 1 if the value received matches the value sent.
-	// Return 0 else. (A slave held the bus low).
-	return (touch_bit(OW_UART_READ_BIT) == OWI_UART_READ_BIT);
+    send(OW_ROM_SKIP);
 }
-*/
 
 /*
  * Detects presents
@@ -97,3 +97,35 @@ uint8_t one_wire::touch_bit(uint8_t value)
 	
 	return _uart.DATA;
 }
+
+/*
+ * Returns received byte
+ */ 
+uint8_t one_wire::receive(void)
+{
+    uint8_t result = 0x00;
+    for (uint8_t i = 0; i < 8; i++) {
+        result >>= 1;
+        if (touch_bit(OW_UART_READ_BIT) == OW_UART_READ_BIT) {
+            result |= 0x80;
+        }
+    }
+}
+
+/*
+ * send one byte into the bus
+ */
+void one_wire::send(uint8_t value)
+{
+    uint8_t mask = 0x01;
+    
+    do {
+        if (value & mask) {
+            touch_bit(OW_UART_WRITE1);
+        } else {
+            touch_bit(OW_UART_WRITE0);
+        }
+
+    } while (mask);
+}
+

@@ -24,54 +24,31 @@
 #ifndef _ds18b20_h_
 #define _ds18b20_h_
 
+#ifndef DS18B20_FAMILY_ID
+#define DS18B20_FAMILY_ID 0x10
+#endif
+
+#define DS1820_START_CONVERSION 0x44
+#define DS1820_READ_SCRATCHPAD  0xbe
+
+
 class ds18b20 : public sensor
 {
     private:
-        USART_t& _uart;
-        
-        PORT_t& _rx_port;
-        
-        uint8_t _rx_pin;
-        
-        PORT_t& _tx_port;
-        
-        uint8_t _tx_pin;
-
-        /*
-         * Read one bit
-         */
-        uint8_t read_bit(void);
-        
-        /*
-         * Write bit
-         */
-        void write_bit(uint8_t);
-        
-        /*
-         * Read one byte from sensor
-         */
-        uint8_t read(void);
-        
-        /*
-         * Write one byte into sensor
-         */
-        void write(uint8_t value);
+        one_wire& _onewire;
+        double _value;
         
     public:
-        ds18b20(USART_t& __uart,
-                PORT_t& __rx_port, uint8_t __rx_pin,
-                PORT_t& __tx_port, uint8_t __tx_pin) : sensor(),
-            _uart(__uart),
-            _rx_port(__rx_port),
-            _tx_port(__tx_port)
+        ds18b20(one_wire& __onewire) : sensor(),
+            _onewire(__onewire)
         {
-            _rx_pin = __rx_pin;
-            _tx_pin = __tx_pin;
         }
         
         void init(void);
         
         double get_value(void);
+        
+        void read(void);
 };
 
 #endif

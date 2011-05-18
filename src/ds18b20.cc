@@ -23,51 +23,93 @@
 
 #ifdef UART_DEBUG
 #include <stdio.h>
+#include "uart_stio.h"
 #endif
 
 #include <avr/io.h>
+#include "onewire.h"
 #include "sensor.h"
 #include "ds18b20.h"
 
 /*
- * The UART data format used when generating 1-Wire signals
- * is 8 data bits, no parity and 1 stop byte. One UART data
- * frame is used to generate the waveform for one bit 
- * or one RESET/PRESENCE sequence.
+ * Initialize ds18b20 module
  */
 void ds18b20::init(void)
 {
-    // TODO: Initialize UART module
+    _value = 0.0;
+#ifdef UART_DEBUG
+    if (!_onewire.detect_presents()) {
+        printf("Unable to detect 1-wire device on the bus.\r\n");
+    } else {
+        printf("1-Wire device present.\r\n");
+    }
+#else
+    _onewire.detect_presents();
+#endif
+
+  // Match the id found earlier.
+    OWI_MatchRom(id, bus);
+    // Send start conversion command.
+    OWI_SendByte(DS1820_START_CONVERSION, bus);
+    // Wait until conversion is finished.
+    // Bus line is held low until conversion is finished.
+    while (!OWI_ReadBit(bus))
+    {
+    
+    }
+    // Reset, presence.
+    if(!OWI_DetectPresence(bus))
+    {
+        return -1000; // Error
+    }
+    // Match id again.
+    OWI_MatchRom(id, bus);
+    // Send READ SCRATCHPAD command.
+    OWI_SendByte(DS1820_READ_SCRATCHPAD, bus);
+    // Read only two first bytes (temperature low, temperature high)
+    // and place them in the 16 bit temperature variable.
+    temperature = OWI_ReceiveByte(bus);
+    temperature |= (OWI_ReceiveByte(bus) << 8);
+    
+    return temperature;
 }
 
+/*
+ * Reads sensor`s ROM
+ */
+void ds18b20::read_rom(void)
+{
+    _onewire.send_byte(OW_ROM_READ);
+    for (uint8_t i = 0; i < OW_ROM_LENGTH; i++) {
+        _rom[i] = _onewire.receive();
+    }
+}
+
+/*
+ * Match sensor by ROM.
+ */
+void ds18b20::match_rom(void)
+{
+    _onewire.send_byte(OW_ROM_MATCH);
+    for (uint8_t i = 0; i < OW_ROM_LENGTH; i++) {
+        _onewire.send(_rom[i]);
+    }
+}
+
+/*
+ * Returns last readed value
+ */
 double ds18b20::get_value(void)
 {
     return 0.0;
 }
 
-uint8_t ds18b20::read(void)
+/*
+ * Read value from the sensor using sensor
+ * specified logic
+ */
+void ds18b20::read(void)
 {
-    return 0;
+    return;
 }
 
-void ds18b20::write(uint8_t value)
-{
-    write_bit(value & 1);
-    write_bit((value & 2) >> 1);
-    write_bit((value & 4) >> 2);
-    write_bit((value & 8) >> 3);
-    write_bit((value & 16) >> 4);
-    write_bit((value & 32) >> 5);
-    write_bit((value & 64) >> 6);
-    write_bit((value & 128) >> 7);
-}
-
-uint8_t ds18b20::read_bit(void)
-{
-    //
-}
-
-void ds18b20::write_bit(uint8_t bit)
-{
-    //
-}
