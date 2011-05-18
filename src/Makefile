@@ -47,6 +47,7 @@ OBJECTS = $(BUILD_DIR)/main.o \
 		  $(BUILD_DIR)/spi.o \
 		  $(BUILD_DIR)/udp_service.o \
           $(BUILD_DIR)/iface.o \
+		  $(BUILD_DIR)/onewire.o \
 		  $(BUILD_DIR)/utils.o 
 
 ## Objects explicitly added by the user

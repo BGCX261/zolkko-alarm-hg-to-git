@@ -47,14 +47,21 @@
 #define OW_UBRR_115200			8
 #define OW_UBRR_9600			103
 
-class OneWire()
+class one_wire
 {
-	public :
-		OneWire()
+	private:
+		USART_t& _uart;
+		
+		uint8_t touch_bit(uint8_t value);
+		
+	public:
+		one_wire(USART_t& __uart) : _uart(__uart)
 		{
 		}
 		
 		void init(void);
+		
+		uint8_t detect_presents(void);
 };
 
 #endif
