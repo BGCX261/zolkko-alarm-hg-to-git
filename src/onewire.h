@@ -23,11 +23,14 @@
 #ifndef _ONEWIRE_H_
 #define _ONEWIRE_H_
 
-
-#define OW_ROM_READ				0x33  // READ ROM command code.
-#define OW_ROM_SKIP				0xcc  // SKIP ROM command code.
-#define OW_ROM_MATCH			0x55  // MATCH ROM command code.
-#define OW_ROM_SEARCH			0xf0  // SEARCH ROM command code.
+/*
+ * ROM Commands
+ */
+#define OW_ROM_READ		0x33
+#define OW_ROM_SKIP		0xcc
+#define OW_ROM_MATCH	0x55
+#define OW_ROM_SEARCH	0xf0
+#define OW_ROM_ALARM	0xec
 
 /*
  * Return codes
@@ -79,9 +82,15 @@ class one_wire
         
         void send(uint8_t value);
         
-		uint8_t detect_presents(void);
+		uint8_t reset(void);
         
         void skip_rom(void);
+		
+		void read_rom(void);
+		
+		void match_rom(void);
+		
+		void alarm_search(void);
 };
 
 #endif

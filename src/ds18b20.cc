@@ -23,7 +23,7 @@
 
 #ifdef UART_DEBUG
 #include <stdio.h>
-#include "uart_stio.h"
+#include "uart_stdio.h"
 #endif
 
 #include <avr/io.h>
@@ -36,7 +36,8 @@
  */
 void ds18b20::init(void)
 {
-    _value = 0.0;
+	// We do not need to initialize anything
+	/*
 #ifdef UART_DEBUG
     if (!_onewire.detect_presents()) {
         printf("Unable to detect 1-wire device on the bus.\r\n");
@@ -46,8 +47,9 @@ void ds18b20::init(void)
 #else
     _onewire.detect_presents();
 #endif
-
-  // Match the id found earlier.
+	*/
+	/*
+	// Match the id found earlier.
     OWI_MatchRom(id, bus);
     // Send start conversion command.
     OWI_SendByte(DS1820_START_CONVERSION, bus);
@@ -70,30 +72,7 @@ void ds18b20::init(void)
     // and place them in the 16 bit temperature variable.
     temperature = OWI_ReceiveByte(bus);
     temperature |= (OWI_ReceiveByte(bus) << 8);
-    
-    return temperature;
-}
-
-/*
- * Reads sensor`s ROM
- */
-void ds18b20::read_rom(void)
-{
-    _onewire.send_byte(OW_ROM_READ);
-    for (uint8_t i = 0; i < OW_ROM_LENGTH; i++) {
-        _rom[i] = _onewire.receive();
-    }
-}
-
-/*
- * Match sensor by ROM.
- */
-void ds18b20::match_rom(void)
-{
-    _onewire.send_byte(OW_ROM_MATCH);
-    for (uint8_t i = 0; i < OW_ROM_LENGTH; i++) {
-        _onewire.send(_rom[i]);
-    }
+    */
 }
 
 /*
@@ -101,7 +80,7 @@ void ds18b20::match_rom(void)
  */
 double ds18b20::get_value(void)
 {
-    return 0.0;
+    return _value;
 }
 
 /*

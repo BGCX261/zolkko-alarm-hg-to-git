@@ -34,7 +34,10 @@
 void one_wire::init(void)
 {
     _uart_port.DIRSET = _BV(_uart_tx_pin);
-    _uart_port.DIRSET = _BV(_uart_rx_pin);
+	_uart_port.OUTSET = _BV(_uart_tx_pin);
+	
+	_uart_port.DIRCLR = _BV(_uart_rx_pin);
+	_uart_port.OUTCLR = _BV(_uart_rx_pin);
 	
 	// 8N1
 	_uart.CTRLC = (uint8_t) USART_CHSIZE_8BIT_gc | USART_PMODE_DISABLED_gc; // TODO: USART 2X
@@ -45,21 +48,13 @@ void one_wire::init(void)
 	_uart.BAUDCTRLA = UBRRL_VALUE;
 	_uart.BAUDCTRLB = UBRRH_VALUE;
     
-	_uart.CTRLB |= USART_TXEN_bm | USART_RXEN_bm;
-}
-
-/*
- * Skip ROM
- */
-void one_wire::skip_rom(void)
-{
-    send(OW_ROM_SKIP);
+	_uart.CTRLB |= USART_TXEN_bm | USART_RXEN_bm | USART_CLK2X_bm;
 }
 
 /*
  * Detects presents
  */
-uint8_t one_wire::detect_presents(void)
+uint8_t one_wire::reset(void)
 {
 	// Reset RX receiver
 	_uart.CTRLB &= ~(USART_RXEN_bm);
@@ -110,6 +105,7 @@ uint8_t one_wire::receive(void)
             result |= 0x80;
         }
     }
+	return result;
 }
 
 /*
@@ -118,14 +114,52 @@ uint8_t one_wire::receive(void)
 void one_wire::send(uint8_t value)
 {
     uint8_t mask = 0x01;
-    
     do {
         if (value & mask) {
             touch_bit(OW_UART_WRITE1);
         } else {
             touch_bit(OW_UART_WRITE0);
         }
-
+		mask <<= 1;
     } while (mask);
 }
 
+void one_wire::read_rom(void)
+{
+	printf("1-Wire Read rom invoked\r\n");
+	
+	uint8_t rst = reset();
+	if (rst) {
+		send(OW_ROM_READ);
+		for (uint8_t i = 0; i < OW_ROM_LENGTH; i++) {
+			_rom[i] = receive();
+		}
+	}
+	
+	printf("reset value = %x", rst);
+	if (rst) {
+		printf("rom: ");
+		for (uint8_t i = 0; i < OW_ROM_LENGTH; i++) {
+			printf("0x%x ", _rom[i]);
+		}
+		printf("\r\n");
+	}
+}
+
+void one_wire::match_rom(void)
+{
+    send(OW_ROM_MATCH);
+    for (uint8_t i = 0; i < OW_ROM_LENGTH; i++) {
+        send(_rom[i]);
+    }
+}
+
+void one_wire::skip_rom(void)
+{
+    send(OW_ROM_SKIP);
+}
+
+void one_wire::alarm_search(void)
+{
+	send(OW_ROM_ALARM);
+}

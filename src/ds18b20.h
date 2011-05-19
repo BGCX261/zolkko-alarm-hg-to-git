@@ -28,6 +28,9 @@
 #define DS18B20_FAMILY_ID 0x10
 #endif
 
+
+#define DS18B20_FAMILY_CODE      0x28
+
 #define DS1820_START_CONVERSION 0x44
 #define DS1820_READ_SCRATCHPAD  0xbe
 
@@ -42,6 +45,7 @@ class ds18b20 : public sensor
         ds18b20(one_wire& __onewire) : sensor(),
             _onewire(__onewire)
         {
+			_value = 0.0;
         }
         
         void init(void);
