@@ -36,59 +36,74 @@
  */
 void ds18b20::init(void)
 {
-	// We do not need to initialize anything
-	/*
-#ifdef UART_DEBUG
-    if (!_onewire.detect_presents()) {
-        printf("Unable to detect 1-wire device on the bus.\r\n");
-    } else {
-        printf("1-Wire device present.\r\n");
-    }
-#else
-    _onewire.detect_presents();
-#endif
-	*/
-	/*
-	// Match the id found earlier.
-    OWI_MatchRom(id, bus);
-    // Send start conversion command.
-    OWI_SendByte(DS1820_START_CONVERSION, bus);
-    // Wait until conversion is finished.
-    // Bus line is held low until conversion is finished.
-    while (!OWI_ReadBit(bus))
-    {
-    
-    }
-    // Reset, presence.
-    if(!OWI_DetectPresence(bus))
-    {
-        return -1000; // Error
-    }
-    // Match id again.
-    OWI_MatchRom(id, bus);
-    // Send READ SCRATCHPAD command.
-    OWI_SendByte(DS1820_READ_SCRATCHPAD, bus);
-    // Read only two first bytes (temperature low, temperature high)
-    // and place them in the 16 bit temperature variable.
-    temperature = OWI_ReceiveByte(bus);
-    temperature |= (OWI_ReceiveByte(bus) << 8);
-    */
+	// No need to initialize anything
 }
 
 /*
  * Returns last readed value
  */
-double ds18b20::get_value(void)
+float ds18b20::get_value(void)
 {
     return _value;
 }
 
 /*
- * Read value from the sensor using sensor
- * specified logic
+ * Read value from the sensor
  */
-void ds18b20::read(void)
+uint8_t ds18b20::read(void)
 {
-    return;
+	if (_onewire.reset()) {
+		_onewire.skip_rom();
+		_onewire.send(DS18B20_START_CONVERSION);
+		
+		uint16_t timeout = 0;
+		do {
+			timeout++;
+		} while (timeout < 0xffff && !_onewire.touch_bit(OW_UART_READ_BIT));
+		
+		if (timeout == 0xffff) {
+			#ifdef UART_DEBUG
+			printf("Temperature converting timeout.\r\n");
+			#endif
+			return false;
+		}
+		
+		if (_onewire.reset()) {
+			_onewire.skip_rom();
+			_onewire.send(DS18B20_READ_SCRATCHPAD);
+			
+			uint8_t data_lo = _onewire.receive();
+			uint8_t data_hi = _onewire.receive();
+			
+			uint16_t temperature_data = (data_hi << 8) | data_lo;
+			
+			// clear unnesesary data
+			temperature_data = temperature_data & 0x0fff;
+			
+			uint8_t sign_bit = temperature_data & 0x8000;
+			if (sign_bit) {
+				temperature_data = (temperature_data ^ 0xffff) + 1;
+			}
+			
+			uint16_t frac_part = temperature_data & 0x000f;
+			uint16_t int_part  = temperature_data >> 4;
+			
+			_value = int_part + (frac_part * 0.0625);
+			if (sign_bit) {
+				_value = _value * -1;
+			}
+			
+			return true;
+		} else {
+			#ifdef UART_DEBUG
+			printf("Failed to reset 1-wire BUS before reading sensor's ROM.\r\n");
+			#endif
+			return false;
+		}
+	} else {
+		#ifdef UART_DEBUG
+		printf("Failed to reset 1-wire BUS.\r\n");
+		#endif
+		return false;
+	}
 }
-

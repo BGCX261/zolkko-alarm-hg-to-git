@@ -31,11 +31,16 @@
 #include "spi.h"
 #include "net.h"
 #include "net_driver.h"
+#include "onewire.h"
+#include "sensor.h"
+#include "ds18b20.h"
 #include "enc28j60.h"
 #include "iface.h"
 #include "settings.h"
 #include "static_settings.h"
 #include "udp_service.h"
+#include <util/atomic.h>
+#include "utils.h"
 
 
 /*
@@ -54,9 +59,53 @@ int main(void)
 	// Stabilization. This line will help much on schematic SC errors.
 	_delay_ms(1000);
 	
+	PORTE.DIRSET = _BV(0);
+	PORTE.DIRSET = _BV(1);
+	
+	enable_32mhz();
+	
 #ifdef UART_DEBUG
 	uart_init();
 	printf("\r\n\r\n=================================\r\nUART debugging module has been initialized.\r\n=================================\r\n");
+#endif
+	
+	// testing DS18B20 1-wire connection protocol
+	one_wire ow(USARTF0, PORTF, 3, 2);
+	ow.init();
+	
+#ifdef UART_DEBUG
+	if (ow.reset()) {
+		ow.read_rom();
+		uint8_t (&rom)[OW_ROM_LENGTH] = (uint8_t (&)[OW_ROM_LENGTH])ow.get_rom();
+		
+		printf("1-wire ROM has been read: ");
+		for (uint8_t i = 0; i < OW_ROM_LENGTH; i++) {
+			printf("0x%x ", rom[i]);
+		}
+		printf("\r\n");
+	} else {
+		printf("Failed  to reset 1-wire.\r\n");
+	}
+#endif
+	
+	if (ow.reset()) {
+		ow.skip_rom();
+	} else {
+		printf("Failed to reset 1-wire BUS.\r\n");
+	}
+	
+	ds18b20 sen(ow);
+	sen.init();
+	
+	if (sen.read()) {
+#ifdef UART_DEBUG
+		printf("Temperature %0.2f.\r\n", sen.get_value());
+#endif
+	}
+#ifdef UART_DEBUG
+	else {
+		printf("Failed to read temperature sensor.\r\n");
+	}
 #endif
 	
 	static_settings settings;

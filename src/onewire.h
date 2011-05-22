@@ -26,11 +26,11 @@
 /*
  * ROM Commands
  */
-#define OW_ROM_READ		0x33
-#define OW_ROM_SKIP		0xcc
-#define OW_ROM_MATCH	0x55
-#define OW_ROM_SEARCH	0xf0
-#define OW_ROM_ALARM	0xec
+#define OW_ROM_READ				0x33
+#define OW_ROM_SKIP				0xcc
+#define OW_ROM_MATCH			0x55
+#define OW_ROM_SEARCH			0xf0
+#define OW_ROM_ALARM			0xec
 
 /*
  * Return codes
@@ -46,11 +46,10 @@
 #define OW_UART_READ_BIT		0xff  // UART Read bit pattern.
 #define OW_UART_RESET			0xf0  // UART Reset bit pattern.
 
-#define OW_UART_2X				1
-#define OW_UBRR_115200			8
-#define OW_UBRR_9600			103
-
 #define OW_ROM_LENGTH 8
+
+#define OW_TIMEOUT_DATA_TYPE    uint32_t
+#define OW_TIMEOUT_VALUE        0xffffffff
 
 class one_wire
 {
@@ -64,8 +63,6 @@ class one_wire
         uint8_t _uart_rx_pin;
         
         uint8_t _rom[OW_ROM_LENGTH];
-		
-		uint8_t touch_bit(uint8_t value);
 		
 	public:
 		one_wire(USART_t& __uart, PORT_t& __uart_port, uint8_t __tx_pin, uint8_t __rx_pin) :
@@ -91,7 +88,17 @@ class one_wire
 		void match_rom(void);
 		
 		void alarm_search(void);
+		
+		uint8_t touch_bit(uint8_t value);
+		
+		const uint8_t (&get_rom(void))[OW_ROM_LENGTH]
+		{
+			return (const uint8_t(&)[OW_ROM_LENGTH]) _rom;
+		}
+		
+#ifdef UART_DEBUG
+		void test(void);
+#endif
 };
 
 #endif
-

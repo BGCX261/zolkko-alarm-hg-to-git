@@ -27,6 +27,7 @@
  
 #include <avr/io.h>
 #include "onewire.h"
+#include "utils.h"
 
 /*
  * Initialize 1-wire
@@ -35,21 +36,27 @@ void one_wire::init(void)
 {
     _uart_port.DIRSET = _BV(_uart_tx_pin);
 	_uart_port.OUTSET = _BV(_uart_tx_pin);
-	
 	_uart_port.DIRCLR = _BV(_uart_rx_pin);
-	_uart_port.OUTCLR = _BV(_uart_rx_pin);
 	
-	// 8N1
-	_uart.CTRLC = (uint8_t) USART_CHSIZE_8BIT_gc | USART_PMODE_DISABLED_gc; // TODO: USART 2X
+	_uart.CTRLB = USART_TXEN_bm | USART_RXEN_bm;
+	_uart.CTRLC = (uint8_t) USART_CHSIZE_8BIT_gc | USART_PMODE_DISABLED_gc; // 8n1
 	
-	// 115200 @ 2Mhz
-	#define BAUD 115200
-	#include <util/setbaud.h>
-	_uart.BAUDCTRLA = UBRRL_VALUE;
-	_uart.BAUDCTRLB = UBRRH_VALUE;
-    
-	_uart.CTRLB |= USART_TXEN_bm | USART_RXEN_bm | USART_CLK2X_bm;
+	_uart.BAUDCTRLB = BAUD_115200_B;
+	_uart.BAUDCTRLA = BAUD_115200_A;
 }
+
+#ifdef UART_DEBUG
+void one_wire::test(void)
+{
+	uint8_t data = 0;
+	uint8_t result = 0;
+	while (data < 0xff) {
+		result = touch_bit(data);
+		printf("send %x receive %x.\r\n", data, result);
+		data++;
+	}
+}
+#endif
 
 /*
  * Detects presents
@@ -60,35 +67,56 @@ uint8_t one_wire::reset(void)
 	_uart.CTRLB &= ~(USART_RXEN_bm);
 	_uart.CTRLB |= USART_RXEN_bm;
     
-	// 9600 baud @ 2Mhz
-	#define BAUD 9600
-	#include <util/setbaud.h>
-	_uart.BAUDCTRLA = UBRRL_VALUE;
-	_uart.BAUDCTRLB = UBRRH_VALUE;
+	_uart.BAUDCTRLB = BAUD_9600_B;
+	_uart.BAUDCTRLA = BAUD_9600_A;
     
     // Return 0 if the value received matches the value sent.
     // return 1 else. (Presence detected)
     uint8_t res = touch_bit(OW_UART_RESET) != OW_UART_RESET;
 	
 	// set 115200 baudrate
-	#define BAUD 115200
-	#include <util/setbaud.h>
-	_uart.BAUDCTRLA = UBRRL_VALUE;
-	_uart.BAUDCTRLB = UBRRH_VALUE;
+	_uart.BAUDCTRLB = BAUD_115200_B;
+	_uart.BAUDCTRLA = BAUD_115200_A;
 	
 	return res;
 }
 
 /*
  * Read and write byte through the USART.
+ *
+ * TODO: normal timeouts
  */
 uint8_t one_wire::touch_bit(uint8_t value)
 {
+	// It is not needed for now.
+	_uart.CTRLB = 0;
+	_uart.CTRLB = USART_TXEN_bm | USART_RXEN_bm;
+	
 	_uart.DATA = value;
 	
+	OW_TIMEOUT_DATA_TYPE timeout = 0;
 	do {
-		// do nothing
-	} while ((_uart.STATUS & USART_DREIF_bm) == 0) ;
+		timeout++;
+	} while (timeout < OW_TIMEOUT_VALUE && !(_uart.STATUS & USART_DREIF_bm)) ;
+	
+	if (timeout == OW_TIMEOUT_VALUE) {
+#ifdef UART_DEBUG
+		printf("1-wire transmition timeout.\r\n");
+#endif
+		return 0;
+	}
+	
+	timeout = 0;
+	do {
+		timeout++;
+	} while (timeout < OW_TIMEOUT_VALUE && !(_uart.STATUS & USART_RXCIF_bm));
+	
+	if (timeout == OW_TIMEOUT_VALUE) {
+#ifdef UART_DEBUG
+		printf("1-wire reception timeout.\r\n");
+#endif
+		return 0;
+	}
 	
 	return _uart.DATA;
 }
@@ -101,7 +129,9 @@ uint8_t one_wire::receive(void)
     uint8_t result = 0x00;
     for (uint8_t i = 0; i < 8; i++) {
         result >>= 1;
-        if (touch_bit(OW_UART_READ_BIT) == OW_UART_READ_BIT) {
+		uint8_t bit = touch_bit(OW_UART_READ_BIT);
+        if (bit == OW_UART_READ_BIT) {
+		
             result |= 0x80;
         }
     }
@@ -126,23 +156,9 @@ void one_wire::send(uint8_t value)
 
 void one_wire::read_rom(void)
 {
-	printf("1-Wire Read rom invoked\r\n");
-	
-	uint8_t rst = reset();
-	if (rst) {
-		send(OW_ROM_READ);
-		for (uint8_t i = 0; i < OW_ROM_LENGTH; i++) {
-			_rom[i] = receive();
-		}
-	}
-	
-	printf("reset value = %x", rst);
-	if (rst) {
-		printf("rom: ");
-		for (uint8_t i = 0; i < OW_ROM_LENGTH; i++) {
-			printf("0x%x ", _rom[i]);
-		}
-		printf("\r\n");
+	send(OW_ROM_READ);
+	for (uint8_t i = 0; i < OW_ROM_LENGTH; i++) {
+		_rom[i] = receive();
 	}
 }
 

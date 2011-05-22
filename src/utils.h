@@ -27,6 +27,43 @@ extern "C" {
 #endif
 
 /*
+ * From XMega manual: 
+ * System critical I/O register settings are protected from accidental modification.
+ * The SPM instruction is protected from accidental execution, and the LPM instruction is
+ * protected when reading the fuses and signature row.
+ * This is handled globally by the Configuration Change Protection(CCP) register.
+ * Changes to the protected I/O registers or bit, or execution of the protected instructions
+ * are only possible after the CPU writes a signature to the CCP register. The different
+ * signatures is described the register description.
+ *
+ * Within 4 instruction cycles, the application code must write the appropriate
+ * data to the protected register.
+ */
+extern inline void critical_write(volatile uint8_t * address, uint8_t value);
+
+#if F_CPU==32000000UL
+#	define BAUD_9600_B   0xcc
+#	define BAUD_9600_A   0xf5
+#	define BAUD_115200_B 0x98
+#	define BAUD_115200_A 0x2e
+#elseif F_CPU=9000000UL
+#	define BAUD_9600_B   0xd7
+#	define BAUD_9600_A   0x33
+#	define BAUD_115200_B 0xf1
+#	define BAUD_115200_A 0xf1
+#else // 32MHz
+#	define BAUD_9600_B   0xcc
+#	define BAUD_9600_A   0xf5
+#	define BAUD_115200_B 0x98
+#	define BAUD_115200_A 0x2e
+#endif
+
+extern void enable_pll();
+
+extern void enable_32mhz();
+
+
+/*
  * Interface for XMega's AES module
  */
 #ifndef AES_BLOCK_LENGTH

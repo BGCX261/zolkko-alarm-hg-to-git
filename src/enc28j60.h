@@ -3,7 +3,7 @@
  * This driver does not support INT and RST pins and
  * tested on enc28j60-b7 IC revision.
  * 
- * Based on avr-uip code.
+ * defines are taken from avr-uip project code.
  *
  * Copyright (c) 2011 Alex Anisimov, <zolkko@gmail.com>
  *

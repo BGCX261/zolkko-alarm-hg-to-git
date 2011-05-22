@@ -20,16 +20,16 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _termocouple_h_
-#define _termocouple_h_
+#ifndef _thermocouple_h_
+#define _thermocouple_h_
 
-class termocouple : public sensor
+class thermocouple : public sensor
 {
     private:
         sensor& _base;
     
     public:
-        termocouple(sensor& __base) :
+        thermocouple(sensor& __base) :
             sensor(),
             _base(__base)
         {
@@ -37,7 +37,9 @@ class termocouple : public sensor
         
         void init(void);
         
-        double get_value(void);
+        float get_value(void);
+		
+		uint8_t read(void);
 };
 
 #endif

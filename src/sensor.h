@@ -36,7 +36,9 @@ class sensor
         
         virtual void init(void) = 0;
         
-        virtual double get_value(void) = 0;
+        virtual float get_value(void) = 0;
+		
+		virtual uint8_t read(void) = 0;
 };
 
 #endif

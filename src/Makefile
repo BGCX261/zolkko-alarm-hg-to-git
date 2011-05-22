@@ -1,10 +1,16 @@
 ## General Flags
 PROJECT = smokectrl
 MCU = atxmega128a3
-FREQ = 2000000UL
+FREQ = 16000000UL
 BUILD_DIR = build
 TARGET = $(BUILD_DIR)/smokectrl.elf
 CC = avr-gcc
+
+PRINTF_LIB_MIN = -Wl,-u,vfprintf -lprintf_min
+PRINTF_LIB_FLOAT = -Wl,-u,vfprintf -lprintf_flt
+
+## Selecting printf library function
+PRINTF_LIB = $(PRINTF_LIB_FLOAT)
 
 CPP = avr-g++
 
@@ -24,7 +30,7 @@ ASMFLAGS += -x assembler-with-cpp -Wa,-gdwarf2
 
 ## Linker flags
 LDFLAGS = $(COMMON)
-LDFLAGS +=  -Wl,-Map=$(BUILD_DIR)/smokectrl.map
+LDFLAGS +=  -Wl,-Map=$(BUILD_DIR)/smokectrl.map $(PRINTF_LIB)
 
 
 ## Intel Hex file production flags
@@ -49,6 +55,7 @@ OBJECTS = $(BUILD_DIR)/main.o \
           $(BUILD_DIR)/iface.o \
 		  $(BUILD_DIR)/onewire.o \
 		  $(BUILD_DIR)/ds18b20.o \
+		  $(BUILD_DIR)/thermocouple.o \
 		  $(BUILD_DIR)/utils.o 
 
 ## Objects explicitly added by the user

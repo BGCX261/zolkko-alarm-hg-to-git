@@ -23,11 +23,13 @@
 #include <stdio.h>
 #include <avr/io.h>
 #include "uart_stdio.h"
+#include "utils.h"
 
 
 static int uart_putchar(char, FILE *);
 
 static FILE _uart_stdout;
+
 
 /*
  * Prints character 'c' into UART module
@@ -50,10 +52,9 @@ void uart_init()
     
     // 8N1
 	UART_DEV.CTRLC = (uint8_t) USART_CHSIZE_8BIT_gc | USART_PMODE_DISABLED_gc;
-    
-    // 9600 baud @ 2Mhz
-	UART_DEV.BAUDCTRLA = 12;
-	UART_DEV.BAUDCTRLB = 0;
+	
+	UART_DEV.BAUDCTRLB = BAUD_115200_B;
+	UART_DEV.BAUDCTRLA = BAUD_115200_A;
     
 	UART_DEV.CTRLB |= USART_TXEN_bm;
 	

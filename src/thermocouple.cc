@@ -22,17 +22,26 @@
 
 #ifdef UART_DEBUG
 #include <stdio.h>
+#include "uart_stdio.h"
 #endif
-#include <avr/io.h>
-#include "termocouple.h"
 
-void termocouple::init(void)
+#include <avr/io.h>
+#include "sensor.h"
+#include "thermocouple.h"
+
+void thermocouple::init(void)
 {
     // TODO: Initialize ADC
 }
 
-double termocouple::get_value(void)
+float thermocouple::get_value(void)
 {
     // TODO: Read ADC value, copare it with base temperature
     return 0.0;
+}
+
+uint8_t thermocouple::read(void)
+{
+	// TODO: not implemented
+	return false;
 }

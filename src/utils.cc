@@ -21,8 +21,48 @@
  */
 
 #include <avr/io.h>
+#include <util/delay.h>
+#include <util/atomic.h>
 #include "net.h"
 #include "utils.h"
+
+void critical_write(volatile uint8_t * address, uint8_t value)
+{
+	volatile uint8_t * tmpAddr = address;
+		
+	RAMPZ = 0;
+		
+	asm volatile(
+		"movw r30,  %0"	      "\n\t"
+		"ldi  r16,  %2"	      "\n\t"
+		"out   %3, r16"	      "\n\t"
+		"st     Z,  %1"       "\n\t"
+		:
+		: "r" (tmpAddr), "r" (value), "i"(CCP_IOREG_gc), "i" (&CCP)
+		: "r16", "r30", "r31"
+	);
+}
+
+void enable_pll()
+{
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+		OSC.CTRL &= ~OSC_PLLEN_bm; // disable PLL
+		OSC.PLLCTRL = OSC_PLLSRC_RC2M_gc | (8 << OSC_PLLFAC_gp); // 2Mhz * (16 << 0) == 32MHz
+		OSC.CTRL |= OSC_PLLEN_bm;
+		do {} while (!(OSC.STATUS & OSC_PLLRDY_bm)) ;
+		critical_write(&(CLK.PSCTRL), CLK_PSADIV_1_gc | CLK_PSBCDIV_1_1_gc);
+		critical_write(&(CLK.CTRL), CLK_SCLKSEL_PLL_gc);
+	}
+}
+
+void enable_32mhz()
+{
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+		OSC.CTRL |= OSC_RC32MEN_bm;       
+		do {} while(!(OSC.STATUS & OSC_RC32MRDY_bm ));
+		critical_write(&(CLK.CTRL), CLK_SCLKSEL_RC32M_gc);
+	}
+}
 
 inline void aes_load_key(const uint8_t * key)
 {

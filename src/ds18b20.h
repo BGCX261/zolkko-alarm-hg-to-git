@@ -25,21 +25,43 @@
 #define _ds18b20_h_
 
 #ifndef DS18B20_FAMILY_ID
-#define DS18B20_FAMILY_ID 0x10
+#define DS18B20_FAMILY_ID 			0x10
 #endif
 
+#ifndef DS18B20_FAMILY_CODE
+#define DS18B20_FAMILY_CODE			0x28
+#endif
 
-#define DS18B20_FAMILY_CODE      0x28
+#ifndef DS18B20_START_CONVERSION
+#define DS18B20_START_CONVERSION	0x44
+#endif
 
-#define DS1820_START_CONVERSION 0x44
-#define DS1820_READ_SCRATCHPAD  0xbe
+#ifndef DS18B20_WRITE_SCRACHPAD
+#define DS18B20_WRITE_SCRACHPAD		0x4e
+#endif  DS18B20_WRITE_SCRACHPAD
 
+#ifndef DS18B20_READ_SCRATCHPAD
+#define DS18B20_READ_SCRATCHPAD		0xbe
+#endif
+
+#ifndef DS18B20_COPY_SCRATCHPAD
+#define DS18B20_COPY_SCRATCHPAD		0x48
+#endif
+
+#ifndef DS18B20_RECALL_E
+#define DS18B20_RECALL_E			0xb8
+#endif
+
+#ifndef DS18B20_POWER_STATUS
+#define DS18B20_POWER_STATUS		0xb4
+#endif
 
 class ds18b20 : public sensor
 {
     private:
         one_wire& _onewire;
-        double _value;
+		
+        float _value;
         
     public:
         ds18b20(one_wire& __onewire) : sensor(),
@@ -50,9 +72,9 @@ class ds18b20 : public sensor
         
         void init(void);
         
-        double get_value(void);
+        float get_value(void);
         
-        void read(void);
+        uint8_t read(void);
 };
 
 #endif
