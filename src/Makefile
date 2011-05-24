@@ -55,6 +55,7 @@ OBJECTS = $(BUILD_DIR)/main.o \
           $(BUILD_DIR)/iface.o \
 		  $(BUILD_DIR)/onewire.o \
 		  $(BUILD_DIR)/ds18b20.o \
+          $(BUILD_DIR)/adc.o \
 		  $(BUILD_DIR)/thermocouple.o \
 		  $(BUILD_DIR)/utils.o 
 
