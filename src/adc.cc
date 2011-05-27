@@ -1,5 +1,5 @@
 /*
- * Class reads temperature from termocouple
+ * Polled interface to ADC
  *
  * Copyright (c) 2011 Alex Anisimov, <zolkko@gmail.com>
  *
@@ -20,31 +20,11 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _thermocouple_h_
-#define _thermocouple_h_
-
-class thermocouple : public sensor
-{
-    private:
-        /*
-         * this sensor is used for cold soldering
-         * compensation
-         */
-        sensor& _base;
-    
-    public:
-        thermocouple(sensor& __base) :
-            sensor(),
-            _base(__base)
-        {
-        }
-        
-        void init(void);
-        
-        float get_value(void);
-		
-		uint8_t read(void);
-};
-
+#ifdef UART_DEBUG
+#include <stdio.h>
+#include "uart_stdio.h"
 #endif
+
+#include <avr/io.h>
+#include "adc.h"
 
