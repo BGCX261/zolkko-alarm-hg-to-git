@@ -1,9 +1,15 @@
 %%
-%% Тема практики: <<Автоматизированная разработка программно-аппаратного комплекса
-%% ''цифровые часы с будильником'' на базе микроконтроллера AVR семейства XMega>>
+%% Тема: Автоматизированная разработка программно-аппаратного комплекса на базе микроконтроллера AVR семейства XMega
+%% requires ESKDX 0.98
 %%
-\documentclass[russian,utf8,14pt,emptystyle,pointsubsection,reduceheight=15mm]{eskdtext}
+%% Copyright (C) 2011 Alex Anisimov, <zolkko@gmail.com>
+%% CC
+%%
+
+\documentclass[russian,utf8,14pt,emptystyle,pointsubsection,reduceheight=0mm]{eskdtext}
 \usepackage{eskdplain}
+\usepackage{eskdexplan}
+\usepackage{eskdtotal}
 \usepackage{mathtext}
 \usepackage[T2A]{fontenc}
 \usepackage[russian]{babel}
@@ -23,37 +29,36 @@
 \usepackage{listings}
 %\usepackage[unicode]{hyperref}
 \usepackage{float}
+\usepackage{pscyr}
 
-
+%% Values
 \ESKDdepartment{}
 \ESKDcompany{}
 \ESKDclassCode{31 1398}
 \ESKDdocName{Пояснительная записка}
 \ESKDsignature{Автоматизированная разработка программно-аппаратного комплекса на базе микроконтроллера AVR семейства XMega}
-\ESKDtitle{Отчёт по преддипломной практике}
+\ESKDtitle{Выпускная квалификационная работа}
 \ESKDauthor{Анисимов~А.~Н.}
 \ESKDtitleApprovedBy{Руководитель}{Барабанов~В.~Ф.}
 \ESKDtitleAgreedBy{Руководитель}{Барабанов~В.~Ф.}
 \ESKDtitleDesignedBy{студент группы ВМ-072}{Анисимов А.Н.}
 
-
-%% первая страница и титульный лист без рамок и кастомный формат
+%% page styles
 \ESKDdefaultTitleStyle{empty}
 \ESKDdefaultFirstStyle{empty}
 \ESKDdefaultStyle{empty}
 
-%% Уменьшаю размер шрифта колонки №1 основной надписи, так что бы эта
-%% "умная" дура всё таки влезла в рамку
+%% decrease column 1 font size
 \renewcommand{\ESKDfontVIIsize}{\fontsize{10pt}{12pt}}
 
 %% пол умалчанию перечисления используют арабские цифры
 \renewcommand{\theenumi}{\arabic{enumi}}
 
-%% in vstu you havn't place boolrts before list item
-\renewcommand{\labelitemi}{}
-\renewcommand{\labelitemii}{}
-\renewcommand{\labelitemiii}{}
-\renewcommand{\labelitemiv}{}
+%% Boolets
+\renewcommand{\labelitemi}{--}
+\renewcommand{\labelitemii}{--}
+\renewcommand{\labelitemiii}{--}
+\renewcommand{\labelitemiv}{--}
 
 %% Главные заголовки центрируються
 \renewcommand{\ESKDsectionAlign}{\ESKDsectAlignCenter}
@@ -62,45 +67,38 @@
 \renewcommand{\ESKDsubsubsectionStyle}{\normalfont}
 
 %% correct skip interval
-\ESKDsectSkip{subsection}{3em}{1.5em}
-\ESKDsectSkip{subsubsection}{3em}{1.5em}
+\ESKDsectSkip{subsection}{3em}{1em}
+\ESKDsectSkip{subsubsection}{3em}{1em}
 
 %% set page layout
+\geometry{top=20mm}
+\geometry{bottom=20mm}
 \geometry{left=20mm}
-\geometry{right=20mm}
-\setlength{\footskip}{0mm}
+\geometry{right=10mm}
+\setlength{\footskip}{10mm}
 
+\setlength{\ESKDexplanIndent}{\parindent}
 
+\renewcommand{\contentsname}{СОДЕРЖАНИЕ}
+\renewcommand{\refname}{Список литературы}
 
 \begin{document}
 \pagestyle{plain}
 \thispagestyle{empty}
 \include{title}
-\newpage
-
-%% set foot skip
-\setlength{\footskip}{10mm}
-
-\renewcommand{\contentsname}{СОДЕРЖАНИЕ}
-
+\newpage{}
 
 \begin{center}
 \MakeUppercase{ЗАМЕЧАНИЯ РУКОВОДИТЕЛЯ}
 \end{center}
-\newpage
-
-%% Постановка задачи
-\include{task}
 \newpage{}
 
-%% Реферат
+%% Referat
 \include{referat}
 \newpage{}
 
-
-%% В ВГТУ по какой-то причине не считаются с существованием ЕСКД
-%\ESKDthisStyle{formI}
-%\setcounter{page}{3}
+%% Table of contents
+\setcounter{page}{3}
 \tableofcontents
 \newpage{}
 
@@ -123,22 +121,19 @@
 %%\include{acs_serv}
 
 %%\include{scheme}
+\include{developing_scheme_library}
 
-%% экономическая часть
+%% Econom section
 \include{econom}
 
-%% бжд
+%% BJD Section
 \include{bjd}
 
-%% заключение
 \include{finish}
 
-%% Библиография
-\renewcommand{\refname}{СПИСОК ЛИТЕРАТУРЫ}
-
+%% Bib
 \begin{thebibliography}{99}
-\bibitem{lessing} Lawrence Lessig. ''Free culture: how big media uses technology and the law to lock down
-culture and control creativity'', ''Rebuilding Free Culture: One Idea'', KF2979.L47, с. 345
+\bibitem{lessing} Lawrence Lessig. ''Free culture: how big media uses technology and the law to lock down culture and control creativity'', ''Rebuilding Free Culture: One Idea'', KF2979.L47, с. 345
 \bibitem{electric} http://www.staticfreesoft.com/electric.html
 \bibitem{geda} http://en.wikipedia.org/wiki/Geda
 \bibitem{avrref} Atmel corp., ''XMEGA A MANUAL'', с. 433
@@ -154,10 +149,7 @@ culture and control creativity'', ''Rebuilding Free Culture: One Idea'', KF2979.
 \bibitem{avrspi} Atmel corp., ''AVR1309: Using the XMEGA SPI'', Rev. 8057A-AVR-02/08, с. 6
 \bibitem{enc28j60} Microchip inc., ''ENC28J60 Data Sheet. Stand-Alone Ethernet Controller with SPI Interface'', с. 93
 \bibitem{max2usart} Maxim Integrated Products, APPLICATION NOTE 214. Using a UART to Implement a 1-Wire Bus Master. 09/2002, с. 10
-
 \end{thebibliography}
 
 \include{additions}
-
 \end{document}
-
