@@ -20,6 +20,7 @@ src/ili9320.s
 src/main.s
 src/out.h
 src/test.h
+src/build/*
 
 acs_serv/smokehouse/deps/*
 acs_serv/smokehouse/ebin/*
