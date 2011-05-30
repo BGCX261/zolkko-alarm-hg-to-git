@@ -38,7 +38,7 @@
 \ESKDdocName{Пояснительная записка}
 \ESKDsignature{Автоматизированная разработка программно-аппаратного комплекса на базе микроконтроллера AVR семейства XMega}
 \ESKDtitle{Выпускная квалификационная работа}
-\ESKDauthor{Анисимов~А.~Н.}
+\ESKDauthor{\small{Анисимов~А.~Н.}}
 \ESKDtitleApprovedBy{Руководитель}{Барабанов~В.~Ф.}
 \ESKDtitleAgreedBy{Руководитель}{Барабанов~В.~Ф.}
 \ESKDtitleDesignedBy{студент группы ВМ-072}{Анисимов А.Н.}
@@ -67,8 +67,8 @@
 \renewcommand{\ESKDsubsubsectionStyle}{\normalfont}
 
 %% correct skip interval
-\ESKDsectSkip{subsection}{3em}{1em}
-\ESKDsectSkip{subsubsection}{3em}{1em}
+\ESKDsectSkip{subsection}{1.5em}{1em}
+\ESKDsectSkip{subsubsection}{1.5em}{1em}
 
 %% set page layout
 \geometry{top=20mm}
@@ -105,24 +105,14 @@
 %% Введение
 %\include{introduction}
 
-%% Обзор САПР
-%%\include{cad_review}
+%% SAPR Review
+\include{cad_review}
 
 %% Описываем выбор инструментария
-%%\include{tools}
-
-\section{Реализация программно-аппаратного комплекса управления коптильной камерой}
-В качестве объекта исследования в ходе выполнения дипломного проектирования мной
-была спроектирован и частично реализован программно-аппаратный комплекс
-универсального управления температурой.
-
-Одной из возможных областей применения такого рода комплексов является дистанционное
-автоматизированное управление комптильными камерами, используемыми при изготовлении
-мясно-колбасных изделий фабрик пищевой промышленности.
-
+\include{tools}
 
 %% Реализация автоматизированной программно-аппаратной системы управления коптильной камерой
-%%\include{implementation}
+\include{implementation}
 
 %% Адаптивный алгоритм управления температурой
 %%\include{micro_prog}
@@ -130,10 +120,14 @@
 %% Разработка сервиса
 %%\include{acs_serv}
 
-\include{developing_scheme_library}
-\include{scheme}
+\include{dev_scheme_lib}
+\include{dev_scheme}
 \include{pcb}
 \include{verification}
+
+\subsection{Отладка управляющего уйстройства и программного обеспечения системы}
+\subsubsection{JTAG-отладка уравляющего устройства}
+\subsubsection{ТДД-отладка конртоллирующего сервиса}
 
 %% Econom section
 \include{econom}
