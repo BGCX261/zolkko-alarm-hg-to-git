@@ -1,16 +1,38 @@
-\subsection{Разработка принципиальной электрической схемы управляющего устройства в системе Eagle}
-Для создания принципиальных эдектрических схем в системе Eagle используется программа
-Eagle Layout Editor.
+%%
+%% Приложение 2. Принципиальная схема управляющего устройства.
+%% Copyright (C) 2011 Alex Anisimov, <zolkko@gmail.com>
+%%
 
-Для того, что бы открыть новое окно Eagle Layout Editor нужно вызвать команду ''Schematic''
-главного меню ''New''.
+\documentclass[russian,utf8,a1paper,landscape]{eskdgraph}
+\usepackage{mathtext}
+\usepackage[T2A]{fontenc}
+\usepackage[russian]{babel}
+\usepackage{mathptmx}
+\usepackage{amstext}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{ltxtable}
+\usepackage{multirow}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{textcomp}
+\usepackage{lscape}
+\usepackage{rotating}
+\usepackage{geometry}
+\graphicspath{{/Users/zolkko/Projects/zolkko-alarm/doc/imgs/}}
+\usepackage{listings}
+\usepackage{float}
+\usepackage{pscyr}
 
+\renewcommand{\ESKDfontVsize}{\fontsize{13pt}{14pt}}
 
+\ESKDcolumnI{Управляющее устройство универсальной системы терморегулирования на базе микроконтроллера AVR семейства XMega}
+\ESKDcolumnVI{1.7}
+\ESKDcolumnXIfI{\small{Анисимов А. Н.}}
+\ESKDcolumnXIfII{\small{Барабанов В.Ф.}}
 
-
-\subsubsection{Подбор интегрированных баблиотек электронных компонентов}
-Сильной стороной Eagle является -- обшираня коллекция библиотек поставляемых с системой.
-В случае же если какой-либо необходимый компонент отстуствует в коллекции, 
-
-\subsubsection{Ввод принципиальной электрической схемы}
-\subsubsection{Выполнение контроля электрических правил}
+\begin{document}
+	\begin{ESKDdrawing}
+		\center{\includegraphics[bb=0 0 950 820, clip, scale=1.6]{scheme.png}}
+	\end{ESKDdrawing}	
+\end{document}
