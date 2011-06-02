@@ -1,54 +1,226 @@
+%!TEX root = /Users/zolkko/Projects/zolkko-alarm/doc/main.tex
 \begin{center}
-Федеральное агентство по образованию \\*
-\MakeUppercase{Государственое образовательное учреждение} \\*
-\MakeUppercase{Высшего профессионального образования} \\*
-<<\MakeUppercase{Воронежский государственный технический университет}>> \\
+\noindent{Министерство образования и науки Российской Федерации}
 \end{center}
 
-\begin{center}
-Факультет  автоматики и электромеханики \\*
-Кафедра автоматизированных и вычислительных систем
-Специальность 230101 <<Вычислительные машины, комплексы, системы и сети>> \\*
-\end{center}
+\textblockorigin{0mm}{0mm}
+\setlength{\TPHorizModule}{1mm}
+\setlength{\TPVertModule}{\TPHorizModule}
+
+\begin{textblock}{210}(0, 60)
+	\noindent{\makebox[210mm][c]{\scriptsize{(Факультет)}}}
+\end{textblock}
 
 \begin{center}
-\MakeUppercase{Выпускная квалификационная работа} \\*
-Тема дипломной работы: <<Автоматизированная разработка программно-аппаратного комплекса
-на базе микроконтроллера AVR семейства XMega>> \\*
-~ \\
+\MakeUppercase{Государственное образовательное учреждение} \\*
+\MakeUppercase{Высшего профессионального образования} \\*	
+<<\mbox{\MakeUppercase{Воронежский~государственный~технический~университет}}>>\\*
+\underline{\makebox[170mm][c]{Факультет автоматики и электромеханики}} \\*
+\begin{flushleft}
+\noindent{Кафедра \underline{\makebox[154mm][l]{<<Автоматизированных и вычислительных систем>>}} \\*
+Специальность \underline{\makebox[140mm][l]{230101 <<Вычислительные машины, комплексы, системы и сети>>}}}
+\end{flushleft}
+\end{center}
+
+\vfill{}
+
+\begin{center}
+\MakeUppercase{Выпускная квалификационная работа}
+\end{center}
+
+\vfill{}
+
+\begin{flushleft}
+Тема дипломного проекта: \underline{<<Автоматизированная разработка программно-}
+\underline{-аппаратного комплекса
+на базе микроконтроллера AVR семейства XMega>>}
+\end{flushleft}
+
+\vfill{}
+
+\begin{center}
 Пояснительная записка
 \end{center}
 
-\begin{par}~\end{par}
+\begin{par}
+	\vspace{100mm}
+	\textblockorigin{0mm}{160mm}
+	\setlength{\TPHorizModule}{1mm}
+	\setlength{\TPVertModule}{\TPHorizModule}
+	
+	\begin{textblock}{210}(20, 0)
+		\noindent{\makebox[65mm][l]{Разработал}\underline{\makebox[110mm][r]{А.Н. Анисимов}}}
+	\end{textblock}
+	\begin{textblock}{210}(85, 5)
+		\noindent{\makebox[75mm][l]{\scriptsize{Дата, подпись}}\makebox[40mm][l]{\scriptsize{Инициалы, фамилия}}}
+	\end{textblock}
+	
+	\begin{textblock}{210}(20, 10)
+		\noindent{\makebox[65mm][l]{Зав. кафедрой}\underline{\makebox[110mm][r]{С.Л. Подвальный}}}
+	\end{textblock}
+	\begin{textblock}{210}(85, 16)
+		\noindent{\makebox[75mm][l]{\scriptsize{Дата, подпись}}\makebox[40mm][l]{\scriptsize{Инициалы, фамилия}}}
+	\end{textblock}
+	
+	\begin{textblock}{210}(20, 20)
+		\noindent{\makebox[65mm][l]{Руководитель}\underline{\makebox[110mm][r]{В.Ф. Барабанов}}}
+	\end{textblock}
+	\begin{textblock}{210}(85, 26)
+		\noindent{\makebox[75mm][l]{\scriptsize{Дата, подпись}}\makebox[40mm][l]{\scriptsize{Инициалы, фамилия}}}
+	\end{textblock}
+	
+	\begin{textblock}{210}(20, 30)
+		\noindent{\makebox[65mm][l]{Консультанты}\underline{\makebox[110mm][r]{Т.С. Наролина}}}
+	\end{textblock}
+	\begin{textblock}{210}(85, 36)
+		\noindent{\makebox[75mm][l]{\scriptsize{Дата, подпись}}\makebox[40mm][l]{\scriptsize{Инициалы, фамилия}}}
+	\end{textblock}
+	
+	\begin{textblock}{210}(20, 40)
+		\noindent{\underline{\makebox[175mm][r]{В.П. Асташкин}}}
+	\end{textblock}
+	\begin{textblock}{210}(85, 45)
+		\noindent{\makebox[75mm][l]{\scriptsize{Дата, подпись}}\makebox[40mm][l]{\scriptsize{Инициалы, фамилия}}}
+	\end{textblock}
+	
+	\begin{textblock}{210}(20, 52)
+		\noindent{\underline{\makebox[175mm][r]{~}}}
+	\end{textblock}
+	\begin{textblock}{210}(85, 54)
+		\noindent{\makebox[75mm][l]{\scriptsize{Дата, подпись}}\makebox[40mm][l]{\scriptsize{Инициалы, фамилия}}}
+	\end{textblock}
+	
+	\begin{textblock}{210}(20, 62)
+		\noindent{\underline{\makebox[175mm][r]{~}}}
+	\end{textblock}
+	\begin{textblock}{210}(85, 64)
+		\noindent{\makebox[75mm][l]{\scriptsize{Дата, подпись}}\makebox[40mm][l]{\scriptsize{Инициалы, фамилия}}}
+	\end{textblock}
+	
+	\begin{textblock}{210}(20, 72)
+		\noindent{\underline{\makebox[175mm][r]{~}}}
+	\end{textblock}
+	\begin{textblock}{210}(85, 74)
+		\noindent{\makebox[75mm][l]{\scriptsize{Дата, подпись}}\makebox[40mm][l]{\scriptsize{Инициалы, фамилия}}}
+	\end{textblock}
+	
+	\begin{textblock}{210}(20, 80)
+		\noindent{\makebox[65mm][l]{Нормоконтроль проверил(а)}\underline{\makebox[110mm][r]{Т.И. Сергеева}}}
+	\end{textblock}
+	\begin{textblock}{210}(85, 86)
+		\noindent{\makebox[75mm][l]{\scriptsize{Дата, подпись}}\makebox[40mm][l]{\scriptsize{Инициалы, фамилия}}}
+	\end{textblock}
+\end{par}
 
-\begin{tabular}{p{10em}p{6em}@{}p{6em}@{}r@{}r}
-
-XXX & \hrulefill{}  & \hrulefill{}  & \hrulefill{}  \\
- &  \scriptsize{Группа}  & \scriptsize{Подпись} & \scriptsize{Инициалы, фамилия} \\
-
-
-\multirow{2}{12em}{1. \newline{}} & \hrulefill{} & \hrulefill{} & \hrulefill{}  \\
- & \scriptsize{Подпись}  & \scriptsize{Дата} & \scriptsize{Инициалы, фамилия} \\
-
-\multirow{2}{12em}{2. \newline{}} & \hrulefill{} & \hrulefill{} & \hrulefill{}  \\
- & \scriptsize{Подпись}  & \scriptsize{Дата} & \scriptsize{Инициалы, фамилия} \\
-
-\multirow{2}{12em}{3. \newline{}} & \hrulefill{} & \hrulefill{} & \hrulefill{}  \\
- & \scriptsize{Подпись}  & \scriptsize{Дата} & \scriptsize{Инициалы, фамилия} \\
-
-\multirow{2}{12em}{4. \newline{}} & \hrulefill{} & \hrulefill{} & \hrulefill{}  \\
- & \scriptsize{Подпись}  & \scriptsize{Дата} & \scriptsize{Инициалы, фамилия} \\
-
-\multirow{2}{12em}{5. \newline{}} & \hrulefill{} & \hrulefill{} & \hrulefill{}  \\
- & \scriptsize{Подпись}  & \scriptsize{Дата} & \scriptsize{Инициалы, фамилия} \\
-
-%% \multirow{2}{12em}{6. \newline{}} & \hrulefill{} & \hrulefill{} & \hrulefill{}  \\
-%% & \scriptsize{Подпись}  & \scriptsize{Дата} & \scriptsize{Инициалы, фамилия} \\
-
-& & & \\
-Защищена \hrulefill{} &  & Оценка \hrulefill{} & \hrulefill{} 
-\end{tabular}
-
-\vspace{10mm}
+\vfill{}
 
 \begin{center}Воронеж 2011\end{center}
+\newpage{}
+
+\textblockorigin{0mm}{0mm}
+\setlength{\TPHorizModule}{1mm}
+\setlength{\TPVertModule}{\TPHorizModule}
+
+\begin{textblock}{210}(0, 50)
+	\noindent{\makebox[210mm][c]{\scriptsize{(Факультет)}}}
+\end{textblock}
+
+\begin{textblock}{210}(0, 77)
+	\noindent{\makebox[210mm][c]{\scriptsize{(индекс группы)}}}
+\end{textblock}
+
+\begin{textblock}{210}(0, 85)
+	\noindent{\makebox[210mm][c]{\scriptsize{(Фамилия, имя, отчество)}}}
+\end{textblock}
+
+\noindent{\begin{center}
+	\MakeUppercase{Государственное образовательное учреждение} \\
+	\MakeUppercase{Высшего профессионального образования} \\
+	<<\MakeUppercase{Воронежский~государственный~технический~университет}>> \\
+	\underline{\makebox[170mm][c]{Факультет автоматики и электромеханики}} \\
+	\begin{flushleft}
+		\noindent{Кафедра \underline{\makebox[154mm][l]{<<Автоматизированных и вычислительных систем>>}} \\
+		Специальность \underline{\makebox[140mm][l]{230101 <<Вычислительные машины, комплексы, системы и сети>>}}\\
+		Студент группы \underline{\makebox[138mm][c]{ВМ-072}}}
+		\underline{\makebox[175mm][c]{Анисимов Алексей Николаевич}}
+	\end{flushleft}
+	
+\end{center}}
+
+\vspace{1.5em}
+
+\begin{center}
+	\MakeUppercase{Задание}
+\end{center}
+
+\begin{flushleft}
+1. Тема дипломной работы: \underline{<<Автоматизированная разработка программно-}\\
+\underline{-аппаратного комплекса на базе микроконтроллера AVR семейства XMega>>} \\
+утверждена распоряжением по факультету № \underline{\makebox[12mm]{}} от \underline{\makebox[50mm]{}} г.\\
+\end{flushleft}
+
+\begin{flushleft}
+2. Технические условия: Для разработки проекта системы необходим IBM совместимый компьютер
+, работающий под управлением Ubuntu 11.04, процессор Intel Core 2 Duo с тактовой
+частотой 1.8 МГц, ОЗУ не менее 1024 МБ, не менее 20 Гб свободного дискового пространства,
+устройства ввода и вывода информации.
+\end{flushleft}
+
+\noindent{\begin{flushleft}
+% \noindent{\underline{\makebox[170mm][l]{    }}}
+3. Содержание (разделы, графические работы, расчёты и проч.) \\
+Разделы: 1)  Анализ современных систем автоматизированного проектирования программно-аппаратных
+микроконтроллерных комплексов; 2) Выбор инструментальных средств разработки; 3) Реализация
+программно-аппаратного универсальной системы терморегулирования на базе микроконтроллера AVR
+семейства XMega; 4) Организационно-экономическая часть; 5) Безопасность и экологичность в
+дипломном проекте.
+Графичекие работы: 1) Структурная схема универсальной системы терморегулирования на базе
+микроконтроллера AVR семейства XMega; 2) Принципиальная электрическая схема устройства управления;
+3) Топологическая схема устройства управления; 4) Типовая динамика системы;
+5) Архитектура контролирующего сервиса; 6) 7)Структура классов микропрограммы управляющего устройства 8) Технико-экономические показатели порграммно-аппаратного комплекса <<Универсальная система
+терморегуляции на базе микроконтроллера AVR семейства XMega>>.
+\end{flushleft}}
+
+\vfill{}
+
+\newpage{}
+
+4. План выполнения дипломной работы
+с << >> г. по << >>  г.
+
+\begin{tabular}{ccccc}
+\hline
+Название элементов проектной работы & \% & Сроки & \% \\ выполн. & Подпись рук. консул. \\
+\hline
+r2c1 & r2c2 & r2c3 & r2c4 & r2c5\\
+\hline
+r3c1 & r3c2 & r3c3 & r3c4 & r3c5\\
+\hline
+r4c1 & r4c2 & r4c3 & r4c4 & r4c5\\
+\hline
+r5c1 & r5c2 & r5c3 & r5c4 & r5c5\\
+\hline
+r6c1 & r6c2 & r6c3 & r6c4 & r6c5\\
+\hline
+\end{tabular}
+
+Руководитель дипломной работы
+			Барабанов Владимир Федорович
+(подпись) (фамилия, имя, отчество)
+
+5. Дипломная работа закончена
+<< >> г.
+(подпись дипломника)
+6. Пояснительная записка и все материалы просмотрены.
+Консультанты \\
+
+\begin{par}
+	~\\
+7. Допутить дипломника \rule{\linewidth}{0.5mm} \\
+к защите дипломного проекта, дипломной работы в Государственной аттестационной
+комисcии (протокол заседания кафедры №~~~~~ от << >> г.)
+\end{par}
+
+
+
+
