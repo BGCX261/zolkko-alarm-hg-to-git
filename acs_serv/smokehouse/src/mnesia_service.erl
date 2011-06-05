@@ -18,7 +18,9 @@
 %% @spec start() -> ok | failed.
 %% @doc Starting mnesia sample db backend
 start() ->
+    error_logger:info_msg("Initialize mnesia~n======================~n"),
     mnesia:create_schema([node()]),
+    error_logger:info_msg("schema create~n======================~n"),
     mnesia:start(),
     ensure_table('node', 
         fun () ->
@@ -35,11 +37,13 @@ start() ->
                     mnesia:write(#node{name = <<"node_3">>, password = <<"pass">>, address = {127, 0, 0, 1}, port = 3456})
                 end)
         end),
-	%ensure_table(node, [
-	%	{type, set},
-	%	{ram_copies, [node()]},
-	%	{attributes, record_info(fields, node)}
-	%]),
+    error_logger:info_msg("enshure tables~n======================~n"),
+	ensure_table(node, [
+		{type, set},
+		{ram_copies, [node()]},
+		{attributes, record_info(fields, node)}
+	]),
+    error_logger:info_msg("tables created~n======================~n"),
     case mnesia:wait_for_tables(['node'], 1000) of
         {timeout, _} -> failed;
         _ -> ok
