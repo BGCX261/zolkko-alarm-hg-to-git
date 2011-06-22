@@ -20,8 +20,10 @@
  * <http://www.gnu.org/licenses/>.
  */
 
+#include <stddef.h>
 #include <avr/io.h>
 #include <util/delay.h>
+#include <avr\pgmspace.h>
 
 #ifdef UART_DEBUG
 #include <stdio.h>
@@ -54,6 +56,20 @@ extern "C" void __cxa_pure_virtual()
 	do {} while (1) ;
 }
 
+uint8_t ReadCalibrationByte( uint8_t index )
+{
+	uint8_t result;
+	
+	/* Load the NVM Command register to read the calibration row. */
+	NVM_CMD = NVM_CMD_READ_CALIB_ROW_gc;
+	result = pgm_read_byte(index);
+	
+	/* Clean up NVM Command register. */
+	NVM_CMD = NVM_CMD_NO_OPERATION_gc;
+	
+	return (result);
+}
+
 int main(void)
 {
 	// Stabilization. This line will help much on schematic SC errors.
@@ -69,6 +85,56 @@ int main(void)
 	printf("\r\n\r\n=================================\r\nUART debugging module has been initialized.\r\n=================================\r\n");
 #endif
 	
+	// configure PORTA as input
+	PORTA.DIR = 0x00;
+	PORTA.OUT = 0x00;
+	
+	// Enable ADC and flush pipeline
+	ADCA.CALL = ReadCalibrationByte(offsetof(NVM_PROD_SIGNATURES_t, ADCACAL0));
+	ADCA.CALH = ReadCalibrationByte(offsetof(NVM_PROD_SIGNATURES_t, ADCACAL1));
+	
+	ADCA.CTRLA = ADC_ENABLE_bm | ADC_FLUSH_bm;
+	
+	// 12 bit conversion
+	ADCA.CTRLB = ADC_RESOLUTION_12BIT_gc;
+	
+	// internal 1V bandgap reference
+	ADCA.REFCTRL = ADC_REFSEL_INT1V_gc | ADC_BANDGAP_bm;
+	
+	// peripheral clk/8 (32MHz / 512 = 62.5kHz)
+	ADCA.PRESCALER = ADC_PRESCALER_DIV512_gc;
+	
+	// single ended
+	ADCA.CH0.CTRL = ADC_CH_INPUTMODE_SINGLEENDED_gc;
+	ADCA.CH1.CTRL = ADC_CH_INPUTMODE_SINGLEENDED_gc;
+	
+	ADCA.CH0.MUXCTRL = ADC_CH_MUXPOS_PIN0_gc;
+	ADCA.CH1.MUXCTRL = ADC_CH_MUXPOS_PIN1_gc;
+	
+	do {
+		ADCA.CTRLA |= ADC_CH0START_bm | ADC_CH1START_bm;
+		//ADCA.CH0.CTRL |= ADC_CH_START_bm;
+		//ADCA.CH1.CTRL |= ADC_CH_START_bm;
+		
+		// do {} while(!ADCA.CH0.INTFLAGS) ;
+		// do {} while(!ADCA.CH1.INTFLAGS) ;
+		do {} while (!(ADCA.INTFLAGS & (ADC_CH0IF_bm | ADC_CH1IF_bm))) ;
+		
+		uint16_t result0 = ADCA.CH0.RES;
+		printf("Reference\t%d\r\n", result0);
+		
+		uint16_t result1 = ADCA.CH1.RES;
+		printf("Ground\t\t%d\r\n", result1);
+		
+		uint16_t volRng = result0 - result1;
+		
+		double v = volRng / 4096.0;
+		printf("Voltage\t\t%0.4f\r\n", v);
+		
+		_delay_ms(10000);
+	} while (true) ;
+	
+	/*
 	// testing DS18B20 1-wire connection protocol
 	one_wire ow(USARTF0, PORTF, 3, 2);
 	ow.init();
@@ -141,7 +207,7 @@ int main(void)
 	do {
 		udpsvc.iterate();
 	} while (true);
-	
+	*/
 	/*
 	do {
 #ifdef UART_DEBUG
